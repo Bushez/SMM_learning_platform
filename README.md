@@ -88,6 +88,13 @@ uv run python scripts/promote_teacher.py learner@example.com
 
 There is intentionally no public API route for role promotion.
 
+## Course authoring foundation
+
+Teachers create `DRAFT` courses through `/api/v1/teacher/courses`. Only `PUBLISHED` courses are
+returned by `/api/v1/courses`; draft content is never exposed through learner endpoints. Publishing
+is server-side validated and currently requires at least one module, lesson, and task. Course,
+module, lesson, task, option, and accepted-answer schema is introduced through Alembic migrations.
+
 ## Quality commands
 
 ```bash

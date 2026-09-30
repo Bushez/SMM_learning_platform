@@ -112,6 +112,13 @@ cannot be hard-deleted or structurally removed by its teacher; the teacher may m
 non-destructive copy changes only. Removing progressed content requires an explicit future
 revision/soft-delete policy, while archiving remains the MVP way to retire a course.
 
+## Course authoring boundary
+
+Teacher endpoints are protected by both the `TEACHER` dependency and an application-level course
+ownership check. Learner catalog queries filter to `PUBLISHED` status in SQL; a draft is not merely
+hidden in the frontend. Course publish validation executes on the server and will expand from the
+initial content-presence checks to type-specific task rules as task authoring endpoints are added.
+
 ## Media lifecycle
 
 Uploads are validated by MIME type, extension, byte limit, and successful image decode before

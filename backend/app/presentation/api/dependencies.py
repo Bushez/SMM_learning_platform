@@ -8,9 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.application.auth import AuthService
 from app.application.auth.dto import UserView
 from app.application.common.errors import AuthenticationError, AuthorizationError
+from app.application.courses import CourseService
 from app.domain.users import Role
 from app.infrastructure.config import Settings
 from app.infrastructure.persistence.sqlalchemy.repositories import (
+    SqlAlchemyCourseRepository,
     SqlAlchemyRefreshSessionRepository,
     SqlAlchemyUserRepository,
 )
@@ -49,6 +51,13 @@ def get_auth_service(
         transaction=SqlAlchemyTransaction(session),
         refresh_ttl=timedelta(days=settings.refresh_token_ttl_days),
         access_ttl_seconds=settings.access_token_ttl_minutes * 60,
+    )
+
+
+def get_course_service(session: AsyncSession = Depends(get_db_session)) -> CourseService:
+    return CourseService(
+        courses=SqlAlchemyCourseRepository(session),
+        transaction=SqlAlchemyTransaction(session),
     )
 
 

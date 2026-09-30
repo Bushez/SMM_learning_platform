@@ -7,14 +7,22 @@
  */
 
 export * from './authResponse';
+export * from './courseResponse';
+export * from './courseStatus';
+export * from './createCourseRequest';
+export * from './createModuleRequest';
 export * from './healthResponse';
 export * from './hTTPValidationError';
+export * from './listCoursesParams';
+export * from './listTeacherCoursesParams';
 export * from './loginRequest';
+export * from './moduleResponse';
 export * from './readinessChecks';
 export * from './readinessResponse';
 export * from './readinessResponseStatus';
 export * from './registerRequest';
 export * from './role';
+export * from './updateCourseRequest';
 export * from './userResponse';
 export * from './validationError';
 export * from './validationErrorCtx';
