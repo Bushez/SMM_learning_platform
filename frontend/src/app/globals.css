@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--secondary);
+  --color-accent-foreground: var(--secondary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-destructive: var(--danger);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--ring);
+  --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-heading: Georgia, "Times New Roman", serif;
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.5rem;
+}
+
+:root {
+  color-scheme: dark;
+  --background: oklch(0.16 0.018 276);
+  --foreground: oklch(0.97 0.01 265);
+  --surface: oklch(0.205 0.02 276);
+  --surface-muted: oklch(0.245 0.025 276);
+  --primary: oklch(0.71 0.19 282);
+  --primary-foreground: oklch(0.99 0.005 270);
+  --primary-glow: oklch(0.65 0.22 282 / 0.24);
+  --secondary: oklch(0.82 0.13 202);
+  --secondary-foreground: oklch(0.18 0.03 230);
+  --success: oklch(0.75 0.16 153);
+  --warning: oklch(0.82 0.16 72);
+  --danger: oklch(0.66 0.22 25);
+  --border: oklch(0.34 0.025 276);
+  --muted-foreground: oklch(0.74 0.025 270);
+  --ring: oklch(0.75 0.16 282);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply bg-background font-sans;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    background-image: radial-gradient(circle at 12% 0%, var(--primary-glow), transparent 34rem);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply rounded-md px-1 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  .metric-pill {
+    @apply items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-2 text-sm font-bold;
+  }
+
+  .eyebrow {
+    @apply rounded-full bg-primary px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-primary-foreground;
+  }
+
+  .stat-card {
+    @apply flex min-h-36 flex-col rounded-[1.5rem] border border-border bg-surface p-5 text-sm font-semibold text-muted-foreground;
+  }
+
+  .path-step {
+    @apply flex items-center gap-3 rounded-2xl border border-transparent bg-surface-muted p-3 text-muted-foreground;
+  }
+
+  .path-step-active {
+    @apply border-primary/50 bg-primary/10 text-foreground;
+  }
+
+  .field-control {
+    @apply min-h-11 w-full rounded-xl border border-border bg-background px-3 text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/50;
+  }
+}
+
+.contact-grid {
+  background-image:
+    linear-gradient(to right, transparent 33.2%, var(--border) 33.3%, transparent 33.5%, transparent 66.5%, var(--border) 66.7%, transparent 66.8%),
+    linear-gradient(to bottom, transparent 33.2%, var(--border) 33.3%, transparent 33.5%, transparent 66.5%, var(--border) 66.7%, transparent 66.8%);
+  opacity: 0.3;
+  pointer-events: none;
+}

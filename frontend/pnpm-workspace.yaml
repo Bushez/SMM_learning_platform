@@ -1,0 +1,10 @@
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+networkConcurrency: 4
+fetchRetries: 5
+fetchRetryFactor: 2
+fetchRetryMintimeout: 10000
+fetchRetryMaxtimeout: 120000
+fetchTimeout: 600000

@@ -1,0 +1,1 @@
+Schema migrations are generated and applied with Alembic. Do not use create_all().
