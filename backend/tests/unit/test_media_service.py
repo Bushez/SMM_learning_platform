@@ -7,7 +7,7 @@ from PIL import Image
 from app.application.common.errors import ValidationError
 from app.application.media.dto import MediaAssetView
 from app.application.media.service import MediaService
-from app.infrastructure.storage import PillowImageInspector
+from app.infrastructure.storage import MinioStorage, PillowImageInspector
 
 
 def png_bytes() -> bytes:
@@ -94,3 +94,20 @@ async def test_upload_deletes_object_when_metadata_persistence_fails() -> None:
 
     assert storage.put_keys == storage.deleted_keys
     assert transaction.rolled_back is True
+
+
+@pytest.mark.asyncio
+async def test_signed_url_uses_public_endpoint_without_a_network_region_lookup() -> None:
+    storage = MinioStorage(
+        endpoint="minio:9000",
+        public_endpoint="localhost:9000",
+        access_key="minioadmin",
+        secret_key="minioadmin",
+        bucket="visual-learning-media",
+        secure=False,
+        region="us-east-1",
+    )
+
+    url = await storage.get_download_url(object_key="images/example.png")
+
+    assert url.startswith("http://localhost:9000/visual-learning-media/images/example.png?")

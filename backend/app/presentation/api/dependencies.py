@@ -74,6 +74,7 @@ def get_media_service(
         storage=MinioStorage(
             endpoint=settings.minio_endpoint,
             public_endpoint=settings.minio_public_endpoint,
+            region=settings.minio_region,
             access_key=settings.minio_access_key,
             secret_key=settings.minio_secret_key,
             bucket=settings.minio_bucket,
