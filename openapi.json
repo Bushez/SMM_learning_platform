@@ -721,6 +721,150 @@
         }
       }
     },
+    "/api/v1/learning/courses/{course_id}/enroll": {
+      "post": {
+        "tags": [
+          "Learning"
+        ],
+        "summary": "Start or resume a published course",
+        "operationId": "enrollInCourse",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Course Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseProgressResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/learning/courses/{course_id}/progress": {
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "summary": "Get aggregate progress for an enrolled course",
+        "operationId": "getCourseProgress",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Course Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseProgressResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/learning/courses/{course_id}/outline": {
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "summary": "Get enrolled course outline with lesson unlock states",
+        "operationId": "getCourseLearningOutline",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Course Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseProgressResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/teacher/lessons/{lesson_id}/tasks": {
       "post": {
         "tags": [
@@ -1001,6 +1145,37 @@
             },
             "type": "array",
             "title": "Correct Option Ids"
+          },
+          "first_task_completion": {
+            "type": "boolean",
+            "title": "First Task Completion"
+          },
+          "task_completed": {
+            "type": "boolean",
+            "title": "Task Completed"
+          },
+          "lesson_completed": {
+            "type": "boolean",
+            "title": "Lesson Completed"
+          },
+          "module_completed": {
+            "type": "boolean",
+            "title": "Module Completed"
+          },
+          "course_completed": {
+            "type": "boolean",
+            "title": "Course Completed"
+          },
+          "course_progress_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Progress Percent"
           }
         },
         "type": "object",
@@ -1009,7 +1184,13 @@
           "correct",
           "explanation",
           "result_media_id",
-          "correct_option_ids"
+          "correct_option_ids",
+          "first_task_completion",
+          "task_completed",
+          "lesson_completed",
+          "module_completed",
+          "course_completed",
+          "course_progress_percent"
         ],
         "title": "AttemptFeedbackResponse"
       },
@@ -1080,6 +1261,53 @@
           "selected_option_ids"
         ],
         "title": "ChoiceAttemptRequest"
+      },
+      "CourseProgressResponse": {
+        "properties": {
+          "course_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Course Id"
+          },
+          "enrolled": {
+            "type": "boolean",
+            "title": "Enrolled"
+          },
+          "total_tasks": {
+            "type": "integer",
+            "title": "Total Tasks"
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "title": "Completed Tasks"
+          },
+          "progress_percent": {
+            "type": "integer",
+            "title": "Progress Percent"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          },
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/ModuleProgressResponse"
+            },
+            "type": "array",
+            "title": "Modules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "course_id",
+          "enrolled",
+          "total_tasks",
+          "completed_tasks",
+          "progress_percent",
+          "completed",
+          "modules"
+        ],
+        "title": "CourseProgressResponse"
       },
       "CourseResponse": {
         "properties": {
@@ -1379,6 +1607,56 @@
         ],
         "title": "LearnerTaskResponse"
       },
+      "LessonProgressResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "module_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Module Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "total_tasks": {
+            "type": "integer",
+            "title": "Total Tasks"
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "title": "Completed Tasks"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          },
+          "unlocked": {
+            "type": "boolean",
+            "title": "Unlocked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "module_id",
+          "title",
+          "position",
+          "total_tasks",
+          "completed_tasks",
+          "completed",
+          "unlocked"
+        ],
+        "title": "LessonProgressResponse"
+      },
       "LessonResponse": {
         "properties": {
           "id": {
@@ -1476,6 +1754,43 @@
           "height"
         ],
         "title": "MediaAssetResponse"
+      },
+      "ModuleProgressResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "lessons": {
+            "items": {
+              "$ref": "#/components/schemas/LessonProgressResponse"
+            },
+            "type": "array",
+            "title": "Lessons"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "position",
+          "lessons",
+          "completed"
+        ],
+        "title": "ModuleProgressResponse"
       },
       "ModuleResponse": {
         "properties": {

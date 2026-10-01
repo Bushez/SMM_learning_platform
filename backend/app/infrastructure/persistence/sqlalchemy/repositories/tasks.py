@@ -127,7 +127,10 @@ class SqlAlchemyTaskRepository:
             select(LessonModel.id)
             .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
             .join(CourseModel, CourseModuleModel.course_id == CourseModel.id)
-            .where(LessonModel.id == lesson_id, CourseModel.status == CourseStatus.PUBLISHED.value)
+            .where(
+                LessonModel.id == lesson_id,
+                CourseModel.status.in_([CourseStatus.PUBLISHED.value, CourseStatus.ARCHIVED.value]),
+            )
         )
         if lesson is None:
             return None
@@ -175,7 +178,10 @@ class SqlAlchemyTaskRepository:
             .join(LessonModel, TaskModel.lesson_id == LessonModel.id)
             .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
             .join(CourseModel, CourseModuleModel.course_id == CourseModel.id)
-            .where(TaskModel.id == task_id, CourseModel.status == CourseStatus.PUBLISHED.value)
+            .where(
+                TaskModel.id == task_id,
+                CourseModel.status.in_([CourseStatus.PUBLISHED.value, CourseStatus.ARCHIVED.value]),
+            )
         )
         if task is None:
             return None
@@ -193,6 +199,7 @@ class SqlAlchemyTaskRepository:
         )
         return EvaluationTaskView(
             id=task.id,
+            lesson_id=task.lesson_id,
             task_type=TaskType(task.task_type),
             explanation=task.explanation,
             result_media_id=task.result_media_id,

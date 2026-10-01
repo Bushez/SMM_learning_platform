@@ -13,7 +13,7 @@ from app.presentation.api.dependencies import get_task_service, require_authenti
 
 
 class FakeTaskService:
-    async def learner_tasks(self, *, lesson_id: UUID) -> list[LearnerTaskView]:
+    async def learner_tasks(self, *, user_id: UUID, lesson_id: UUID) -> list[LearnerTaskView]:
         return [
             LearnerTaskView(
                 id=uuid4(),

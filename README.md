@@ -110,8 +110,16 @@ Teachers can add lessons and author `SINGLE_CHOICE`, `MULTIPLE_CHOICE`, and `TEX
 Choice options may contain text, image references, or both. `POST /api/v1/learning/lessons/{lesson_id}/tasks`
 returns a learner-safe model that never includes option correctness, accepted text answers, or explanations.
 `POST /api/v1/learning/tasks/{task_id}/attempts` evaluates the answer on the server and persists an
-attempt history record; feedback is returned only after submission. XP and progress are intentionally
-added in the next phases.
+attempt history record; feedback is returned only after submission. XP and streak are intentionally
+added in the next phase.
+
+## Learning progress
+
+Start a published course with `POST /api/v1/learning/courses/{course_id}/enroll`, then obtain its
+aggregate progress or ordered outline from `/progress` and `/outline`. The first lesson is unlocked;
+each subsequent lesson opens only after all prior lessons in the course are complete. Completion uses
+the unique `(user_id, task_id)` `user_task_progress` record, so retried correct answers do not duplicate
+progress. Archived courses cannot be newly enrolled in, while existing enrolled learners may continue.
 
 ## Quality commands
 

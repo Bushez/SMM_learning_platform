@@ -50,6 +50,7 @@ class LearnerTaskView:
 @dataclass(frozen=True, slots=True)
 class EvaluationTaskView:
     id: UUID
+    lesson_id: UUID
     task_type: TaskType
     explanation: str
     result_media_id: UUID | None
@@ -66,3 +67,9 @@ class AttemptFeedback:
     result_media_id: UUID | None
     correct_option_ids: tuple[UUID, ...]
     created_at: datetime
+    first_task_completion: bool = False
+    task_completed: bool = False
+    lesson_completed: bool = False
+    module_completed: bool = False
+    course_completed: bool = False
+    course_progress_percent: int | None = None

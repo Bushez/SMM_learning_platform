@@ -27,6 +27,7 @@ import type {
 import type {
   AttemptFeedbackResponse,
   ChoiceAttemptRequest,
+  CourseProgressResponse,
   HTTPValidationError,
   LearnerTaskResponse,
   TextAttemptRequest
@@ -53,6 +54,336 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export type enrollInCourseResponse201 = {
+  data: CourseProgressResponse
+  status: 201
+}
+
+export type enrollInCourseResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type enrollInCourseResponseSuccess = (enrollInCourseResponse201) & {
+  headers: Headers;
+};
+export type enrollInCourseResponseError = (enrollInCourseResponse422) & {
+  headers: Headers;
+};
+
+export type enrollInCourseResponse = (enrollInCourseResponseSuccess | enrollInCourseResponseError)
+
+export const getEnrollInCourseUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/v1/learning/courses/${courseId}/enroll`
+}
+
+/**
+ * @summary Start or resume a published course
+ */
+export const enrollInCourse = async (courseId: string, options?: Parameters<typeof apiFetch>[1]): Promise<enrollInCourseResponse> => {
+
+  return apiFetch<enrollInCourseResponse>(getEnrollInCourseUrl(courseId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getEnrollInCourseMutationKey = () => ['enrollInCourse'] as const;
+
+export const getEnrollInCourseMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enrollInCourse>>, TError,EnrollInCourseMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof enrollInCourse>>, TError,EnrollInCourseMutationVariables, TContext> => {
+
+const mutationKey = getEnrollInCourseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof enrollInCourse>>, EnrollInCourseMutationVariables> = (props) => {
+          const {courseId} = props ?? {};
+
+          return  enrollInCourse(courseId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EnrollInCourseMutationResult = NonNullable<Awaited<ReturnType<typeof enrollInCourse>>>
+
+    export type EnrollInCourseMutationError = HTTPValidationError
+    export type EnrollInCourseMutationVariables = {courseId: string}
+
+    /**
+ * @summary Start or resume a published course
+ */
+export const useEnrollInCourse = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enrollInCourse>>, TError,EnrollInCourseMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof enrollInCourse>>,
+        TError,
+        EnrollInCourseMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEnrollInCourseMutationOptions(options), queryClient);
+    }
+    export type getCourseProgressResponse200 = {
+  data: CourseProgressResponse
+  status: 200
+}
+
+export type getCourseProgressResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type getCourseProgressResponseSuccess = (getCourseProgressResponse200) & {
+  headers: Headers;
+};
+export type getCourseProgressResponseError = (getCourseProgressResponse422) & {
+  headers: Headers;
+};
+
+export type getCourseProgressResponse = (getCourseProgressResponseSuccess | getCourseProgressResponseError)
+
+export const getGetCourseProgressUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/v1/learning/courses/${courseId}/progress`
+}
+
+/**
+ * @summary Get aggregate progress for an enrolled course
+ */
+export const getCourseProgress = async (courseId: string, options?: Parameters<typeof apiFetch>[1]): Promise<getCourseProgressResponse> => {
+
+  return apiFetch<getCourseProgressResponse>(getGetCourseProgressUrl(courseId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCourseProgressQueryKey = (courseId: string,) => {
+    return [
+    `/api/v1/learning/courses/${courseId}/progress`
+    ] as const;
+    }
+
+
+export const getGetCourseProgressQueryOptions = <TData = Awaited<ReturnType<typeof getCourseProgress>>, TError = HTTPValidationError>(courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseProgress>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCourseProgressQueryKey(courseId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCourseProgress>>> = ({ signal }) => getCourseProgress(courseId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: courseId !== null && courseId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCourseProgress>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCourseProgressQueryResult = NonNullable<Awaited<ReturnType<typeof getCourseProgress>>>
+export type GetCourseProgressQueryError = HTTPValidationError
+
+
+export function useGetCourseProgress<TData = Awaited<ReturnType<typeof getCourseProgress>>, TError = HTTPValidationError>(
+ courseId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseProgress>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCourseProgress>>,
+          TError,
+          Awaited<ReturnType<typeof getCourseProgress>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCourseProgress<TData = Awaited<ReturnType<typeof getCourseProgress>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseProgress>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCourseProgress>>,
+          TError,
+          Awaited<ReturnType<typeof getCourseProgress>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCourseProgress<TData = Awaited<ReturnType<typeof getCourseProgress>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseProgress>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get aggregate progress for an enrolled course
+ */
+
+export function useGetCourseProgress<TData = Awaited<ReturnType<typeof getCourseProgress>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseProgress>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCourseProgressQueryOptions(courseId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type getCourseLearningOutlineResponse200 = {
+  data: CourseProgressResponse
+  status: 200
+}
+
+export type getCourseLearningOutlineResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type getCourseLearningOutlineResponseSuccess = (getCourseLearningOutlineResponse200) & {
+  headers: Headers;
+};
+export type getCourseLearningOutlineResponseError = (getCourseLearningOutlineResponse422) & {
+  headers: Headers;
+};
+
+export type getCourseLearningOutlineResponse = (getCourseLearningOutlineResponseSuccess | getCourseLearningOutlineResponseError)
+
+export const getGetCourseLearningOutlineUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/v1/learning/courses/${courseId}/outline`
+}
+
+/**
+ * @summary Get enrolled course outline with lesson unlock states
+ */
+export const getCourseLearningOutline = async (courseId: string, options?: Parameters<typeof apiFetch>[1]): Promise<getCourseLearningOutlineResponse> => {
+
+  return apiFetch<getCourseLearningOutlineResponse>(getGetCourseLearningOutlineUrl(courseId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCourseLearningOutlineQueryKey = (courseId: string,) => {
+    return [
+    `/api/v1/learning/courses/${courseId}/outline`
+    ] as const;
+    }
+
+
+export const getGetCourseLearningOutlineQueryOptions = <TData = Awaited<ReturnType<typeof getCourseLearningOutline>>, TError = HTTPValidationError>(courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseLearningOutline>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCourseLearningOutlineQueryKey(courseId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCourseLearningOutline>>> = ({ signal }) => getCourseLearningOutline(courseId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: courseId !== null && courseId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCourseLearningOutline>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCourseLearningOutlineQueryResult = NonNullable<Awaited<ReturnType<typeof getCourseLearningOutline>>>
+export type GetCourseLearningOutlineQueryError = HTTPValidationError
+
+
+export function useGetCourseLearningOutline<TData = Awaited<ReturnType<typeof getCourseLearningOutline>>, TError = HTTPValidationError>(
+ courseId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseLearningOutline>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCourseLearningOutline>>,
+          TError,
+          Awaited<ReturnType<typeof getCourseLearningOutline>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCourseLearningOutline<TData = Awaited<ReturnType<typeof getCourseLearningOutline>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseLearningOutline>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCourseLearningOutline>>,
+          TError,
+          Awaited<ReturnType<typeof getCourseLearningOutline>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCourseLearningOutline<TData = Awaited<ReturnType<typeof getCourseLearningOutline>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseLearningOutline>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get enrolled course outline with lesson unlock states
+ */
+
+export function useGetCourseLearningOutline<TData = Awaited<ReturnType<typeof getCourseLearningOutline>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCourseLearningOutline>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCourseLearningOutlineQueryOptions(courseId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export type listLearnerLessonTasksResponse200 = {
   data: LearnerTaskResponse[]

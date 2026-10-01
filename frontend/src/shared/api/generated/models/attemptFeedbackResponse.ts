@@ -12,4 +12,10 @@ export interface AttemptFeedbackResponse {
   explanation: string;
   result_media_id: string | null;
   correct_option_ids: string[];
+  first_task_completion: boolean;
+  task_completed: boolean;
+  lesson_completed: boolean;
+  module_completed: boolean;
+  course_completed: boolean;
+  course_progress_percent: number | null;
 }

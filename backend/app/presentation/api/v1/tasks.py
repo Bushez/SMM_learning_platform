@@ -175,6 +175,12 @@ class AttemptFeedbackResponse(BaseModel):
     explanation: str
     result_media_id: UUID | None
     correct_option_ids: list[UUID]
+    first_task_completion: bool
+    task_completed: bool
+    lesson_completed: bool
+    module_completed: bool
+    course_completed: bool
+    course_progress_percent: int | None
 
     @classmethod
     def from_view(cls, feedback: AttemptFeedback) -> "AttemptFeedbackResponse":
@@ -184,6 +190,12 @@ class AttemptFeedbackResponse(BaseModel):
             explanation=feedback.explanation,
             result_media_id=feedback.result_media_id,
             correct_option_ids=list(feedback.correct_option_ids),
+            first_task_completion=feedback.first_task_completion,
+            task_completed=feedback.task_completed,
+            lesson_completed=feedback.lesson_completed,
+            module_completed=feedback.module_completed,
+            course_completed=feedback.course_completed,
+            course_progress_percent=feedback.course_progress_percent,
         )
 
 
@@ -235,7 +247,7 @@ async def list_learner_lesson_tasks(
 ) -> list[LearnerTaskResponse]:
     return [
         LearnerTaskResponse.from_view(task)
-        for task in await service.learner_tasks(lesson_id=lesson_id)
+        for task in await service.learner_tasks(user_id=_.id, lesson_id=lesson_id)
     ]
 
 

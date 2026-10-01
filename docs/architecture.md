@@ -101,6 +101,11 @@ not award XP or mark progress until those phases introduce their own idempotent 
 - Weekly leaderboard boundaries use UTC. Redis may cache results; PostgreSQL remains authoritative.
 - Sequential lesson unlock is an application policy, not frontend logic.
 
+The MVP progress implementation persists only enrollment and first correct task completion. Lesson,
+module, and course states are fixed-query projections over ordered content and `user_task_progress`,
+avoiding stale aggregate flags and per-course query loops. A PostgreSQL uniqueness constraint on
+`(user_id, task_id)` makes completion idempotent under retries and concurrent submissions.
+
 ### Read-model query policy
 
 Catalog, profile, enrollment, and progress queries must be shaped as bounded read models. A list

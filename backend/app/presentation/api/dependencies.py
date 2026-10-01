@@ -9,12 +9,14 @@ from app.application.auth import AuthService
 from app.application.auth.dto import UserView
 from app.application.common.errors import AuthenticationError, AuthorizationError
 from app.application.courses import CourseService
+from app.application.learning import LearningService
 from app.application.media import MediaService
 from app.application.tasks import TaskService
 from app.domain.users import Role
 from app.infrastructure.config import Settings
 from app.infrastructure.persistence.sqlalchemy.repositories import (
     SqlAlchemyCourseRepository,
+    SqlAlchemyLearningRepository,
     SqlAlchemyMediaRepository,
     SqlAlchemyRefreshSessionRepository,
     SqlAlchemyTaskRepository,
@@ -91,6 +93,14 @@ def get_task_service(session: AsyncSession = Depends(get_db_session)) -> TaskSer
     return TaskService(
         tasks=SqlAlchemyTaskRepository(session),
         media=SqlAlchemyMediaRepository(session),
+        learning=SqlAlchemyLearningRepository(session),
+        transaction=SqlAlchemyTransaction(session),
+    )
+
+
+def get_learning_service(session: AsyncSession = Depends(get_db_session)) -> LearningService:
+    return LearningService(
+        learning=SqlAlchemyLearningRepository(session),
         transaction=SqlAlchemyTransaction(session),
     )
 

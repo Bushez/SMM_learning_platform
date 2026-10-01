@@ -1,4 +1,5 @@
 from .courses import (
+    CourseEnrollmentModel,
     CourseModel,
     CourseModuleModel,
     LessonModel,
@@ -6,11 +7,13 @@ from .courses import (
     TaskAttemptModel,
     TaskModel,
     TaskOptionModel,
+    UserTaskProgressModel,
 )
 from .media import MediaAssetModel
 from .users import RefreshSessionModel, UserModel
 
 __all__ = [
+    "CourseEnrollmentModel",
     "CourseModel",
     "CourseModuleModel",
     "LessonModel",
@@ -21,4 +24,5 @@ __all__ = [
     "TaskModel",
     "TaskOptionModel",
     "UserModel",
+    "UserTaskProgressModel",
 ]

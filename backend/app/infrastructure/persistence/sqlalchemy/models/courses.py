@@ -116,3 +116,34 @@ class TaskAttemptModel(Base):
     answer_text: Mapped[str | None] = mapped_column(Text)
     correct: Mapped[bool] = mapped_column(Boolean, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CourseEnrollmentModel(Base):
+    __tablename__ = "course_enrollments"
+    __table_args__ = (
+        Index("ix_course_enrollments_course_id", "course_id"),
+        Index("ix_course_enrollments_user_id", "user_id"),
+    )
+
+    user_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    course_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("courses.id", ondelete="RESTRICT"), primary_key=True
+    )
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class UserTaskProgressModel(Base):
+    __tablename__ = "user_task_progress"
+    __table_args__ = (Index("ix_user_task_progress_task_id", "task_id"),)
+
+    user_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    task_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("tasks.id", ondelete="RESTRICT"), primary_key=True
+    )
+    completed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

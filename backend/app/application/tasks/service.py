@@ -1,7 +1,10 @@
 from collections.abc import Iterable
+from dataclasses import replace
 from uuid import UUID
 
 from app.application.common.errors import AuthorizationError, NotFoundError, ValidationError
+from app.application.learning.dto import CompletionUpdate
+from app.application.learning.ports import LearningRepository
 from app.application.media.ports import MediaRepository
 from app.domain.courses import TaskType
 from app.domain.learning import evaluate_choice, evaluate_text_answer, normalize_text_answer
@@ -16,10 +19,12 @@ class TaskService:
         *,
         tasks: TaskRepository,
         media: MediaRepository,
+        learning: LearningRepository,
         transaction: TaskTransaction,
     ) -> None:
         self._tasks = tasks
         self._media = media
+        self._learning = learning
         self._transaction = transaction
 
     async def create_task(
@@ -67,7 +72,8 @@ class TaskService:
             raise AuthorizationError("You do not own this task")
         return task
 
-    async def learner_tasks(self, *, lesson_id: UUID) -> list[LearnerTaskView]:
+    async def learner_tasks(self, *, user_id: UUID, lesson_id: UUID) -> list[LearnerTaskView]:
+        await self._ensure_lesson_access(user_id=user_id, lesson_id=lesson_id)
         tasks = await self._tasks.list_learner_tasks(lesson_id)
         if tasks is None:
             raise NotFoundError("Published lesson not found")
@@ -77,6 +83,7 @@ class TaskService:
         self, *, user_id: UUID, task_id: UUID, selected_option_ids: list[UUID]
     ) -> AttemptFeedback:
         task = await self._evaluation_task(task_id)
+        await self._ensure_lesson_access(user_id=user_id, lesson_id=task.lesson_id)
         if task.task_type is TaskType.TEXT_INPUT:
             raise ValidationError("This task requires a text answer")
         if task.task_type is TaskType.SINGLE_CHOICE and len(selected_option_ids) != 1:
@@ -95,6 +102,11 @@ class TaskService:
             answer_text=None,
             correct=correct,
         )
+        if correct:
+            attempt = self._with_completion(
+                attempt,
+                await self._learning.record_task_completion(user_id=user_id, task_id=task.id),
+            )
         await self._transaction.commit()
         return attempt
 
@@ -102,6 +114,7 @@ class TaskService:
         self, *, user_id: UUID, task_id: UUID, answer_text: str
     ) -> AttemptFeedback:
         task = await self._evaluation_task(task_id)
+        await self._ensure_lesson_access(user_id=user_id, lesson_id=task.lesson_id)
         if task.task_type is not TaskType.TEXT_INPUT:
             raise ValidationError("This task requires choice options")
         correct = evaluate_text_answer(answer=answer_text, accepted_answers=task.accepted_answers)
@@ -112,6 +125,11 @@ class TaskService:
             answer_text=answer_text.strip(),
             correct=correct,
         )
+        if correct:
+            attempt = self._with_completion(
+                attempt,
+                await self._learning.record_task_completion(user_id=user_id, task_id=task.id),
+            )
         await self._transaction.commit()
         return attempt
 
@@ -120,6 +138,28 @@ class TaskService:
         if task is None:
             raise NotFoundError("Published task not found")
         return task
+
+    async def _ensure_lesson_access(self, *, user_id: UUID, lesson_id: UUID) -> None:
+        try:
+            await self._learning.require_lesson_access(user_id=user_id, lesson_id=lesson_id)
+        except LookupError as error:
+            raise NotFoundError("Published lesson not found") from error
+        except PermissionError as error:
+            from app.application.common.errors import ConflictError
+
+            raise ConflictError(str(error)) from error
+
+    @staticmethod
+    def _with_completion(attempt: AttemptFeedback, completion: CompletionUpdate) -> AttemptFeedback:
+        return replace(
+            attempt,
+            first_task_completion=completion.first_task_completion,
+            task_completed=True,
+            lesson_completed=completion.lesson_completed,
+            module_completed=completion.module_completed,
+            course_completed=completion.course_completed,
+            course_progress_percent=completion.course_progress_percent,
+        )
 
     async def _validate_media_ownership(
         self, *, author_id: UUID, media_ids: Iterable[UUID]
