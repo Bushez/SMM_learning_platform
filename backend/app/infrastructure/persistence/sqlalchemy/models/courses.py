@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, Uuid, func
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.persistence.sqlalchemy.base import Base
@@ -101,3 +101,18 @@ class TaskAcceptedAnswerModel(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     task_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("tasks.id", ondelete="CASCADE"))
     normalized_value: Mapped[str] = mapped_column(String(500), nullable=False)
+
+
+class TaskAttemptModel(Base):
+    __tablename__ = "task_attempts"
+    __table_args__ = (
+        Index("ix_task_attempts_user_task_created_at", "user_id", "task_id", "created_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"))
+    task_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("tasks.id", ondelete="CASCADE"))
+    selected_option_ids: Mapped[list[str] | None] = mapped_column(JSON)
+    answer_text: Mapped[str | None] = mapped_column(Text)
+    correct: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

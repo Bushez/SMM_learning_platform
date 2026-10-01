@@ -5,7 +5,7 @@ from app.application.common.errors import AuthorizationError, NotFoundError, Val
 from app.application.media.ports import MediaRepository
 from app.domain.courses import CourseStatus
 
-from .dto import CourseView, ModuleView
+from .dto import CourseView, LessonView, ModuleView
 from .ports import CourseRepository, CourseTransaction
 
 
@@ -100,6 +100,28 @@ class CourseService:
         )
         await self._transaction.commit()
         return module
+
+    async def add_lesson(
+        self,
+        *,
+        author_id: UUID,
+        module_id: UUID,
+        title: str,
+        description: str | None,
+        position: int,
+    ) -> LessonView:
+        module = await self._courses.get_module(module_id)
+        if module is None:
+            raise NotFoundError("Module not found")
+        await self.teacher_course(author_id=author_id, course_id=module.course_id)
+        lesson = await self._courses.add_lesson(
+            module_id=module_id,
+            title=title.strip(),
+            description=description.strip() if description else None,
+            position=position,
+        )
+        await self._transaction.commit()
+        return lesson
 
     async def publish(self, *, author_id: UUID, course_id: UUID) -> CourseView:
         await self.teacher_course(author_id=author_id, course_id=course_id)

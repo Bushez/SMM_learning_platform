@@ -287,9 +287,3 @@ export function useGetCourseBySlug<TData = Awaited<ReturnType<typeof getCourseBy
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-

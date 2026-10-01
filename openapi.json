@@ -523,6 +523,64 @@
         }
       }
     },
+    "/api/v1/teacher/courses/modules/{module_id}/lessons": {
+      "post": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Add lesson to own course module",
+        "operationId": "createLesson",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLessonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/teacher/courses/{course_id}/publish": {
       "post": {
         "tags": [
@@ -662,10 +720,299 @@
           }
         }
       }
+    },
+    "/api/v1/teacher/lessons/{lesson_id}/tasks": {
+      "post": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Create a task in an owned lesson",
+        "operationId": "createTask",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lesson Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleChoiceTaskRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceTaskRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TextInputTaskRequest"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "task_type",
+                  "mapping": {
+                    "SINGLE_CHOICE": "#/components/schemas/SingleChoiceTaskRequest",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceTaskRequest",
+                    "TEXT_INPUT": "#/components/schemas/TextInputTaskRequest"
+                  }
+                },
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teacher/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Get an owned task with editor-only correctness data",
+        "operationId": "getTeacherTask",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/learning/lessons/{lesson_id}/tasks": {
+      "get": {
+        "tags": [
+          "Learning"
+        ],
+        "summary": "List learner-safe tasks for a published lesson",
+        "operationId": "listLearnerLessonTasks",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lesson Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LearnerTaskResponse"
+                  },
+                  "title": "Response Listlearnerlessontasks"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/learning/tasks/{task_id}/attempts": {
+      "post": {
+        "tags": [
+          "Learning"
+        ],
+        "summary": "Submit an answer for a published task",
+        "operationId": "submitTaskAttempt",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ChoiceAttemptRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TextAttemptRequest"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttemptFeedbackResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AttemptFeedbackResponse": {
+        "properties": {
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Attempt Id"
+          },
+          "correct": {
+            "type": "boolean",
+            "title": "Correct"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "result_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Media Id"
+          },
+          "correct_option_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Correct Option Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attempt_id",
+          "correct",
+          "explanation",
+          "result_media_id",
+          "correct_option_ids"
+        ],
+        "title": "AttemptFeedbackResponse"
+      },
       "AuthResponse": {
         "properties": {
           "access_token": {
@@ -707,6 +1054,32 @@
           "file"
         ],
         "title": "Body_uploadImage"
+      },
+      "ChoiceAttemptRequest": {
+        "properties": {
+          "task_type": {
+            "type": "string",
+            "enum": [
+              "SINGLE_CHOICE",
+              "MULTIPLE_CHOICE"
+            ],
+            "title": "Task Type"
+          },
+          "selected_option_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Selected Option Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_type",
+          "selected_option_ids"
+        ],
+        "title": "ChoiceAttemptRequest"
       },
       "CourseResponse": {
         "properties": {
@@ -816,6 +1189,39 @@
         ],
         "title": "CreateCourseRequest"
       },
+      "CreateLessonRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "position"
+        ],
+        "title": "CreateLessonRequest"
+      },
       "CreateModuleRequest": {
         "properties": {
           "title": {
@@ -873,6 +1279,147 @@
         },
         "type": "object",
         "title": "HealthResponse"
+      },
+      "LearnerTaskOptionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Id"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "media_id",
+          "position"
+        ],
+        "title": "LearnerTaskOptionResponse"
+      },
+      "LearnerTaskResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "lesson_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lesson Id"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "prompt_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Media Id"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/LearnerTaskOptionResponse"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lesson_id",
+          "task_type",
+          "position",
+          "prompt",
+          "prompt_media_id",
+          "options"
+        ],
+        "title": "LearnerTaskResponse"
+      },
+      "LessonResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "module_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Module Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "module_id",
+          "title",
+          "description",
+          "position"
+        ],
+        "title": "LessonResponse"
       },
       "LoginRequest": {
         "properties": {
@@ -972,6 +1519,80 @@
         ],
         "title": "ModuleResponse"
       },
+      "MultipleChoiceTaskRequest": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Position"
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "prompt_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Media Id"
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Explanation"
+          },
+          "result_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Media Id"
+          },
+          "task_type": {
+            "type": "string",
+            "const": "MULTIPLE_CHOICE",
+            "title": "Task Type"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOptionRequest"
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Options"
+          },
+          "accepted_answers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Accepted Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "prompt",
+          "explanation",
+          "task_type",
+          "options"
+        ],
+        "title": "MultipleChoiceTaskRequest"
+      },
       "ReadinessChecks": {
         "properties": {
           "database": {
@@ -1060,6 +1681,357 @@
           "TEACHER"
         ],
         "title": "Role"
+      },
+      "SingleChoiceTaskRequest": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Position"
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "prompt_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Media Id"
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Explanation"
+          },
+          "result_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Media Id"
+          },
+          "task_type": {
+            "type": "string",
+            "const": "SINGLE_CHOICE",
+            "title": "Task Type"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOptionRequest"
+            },
+            "type": "array",
+            "minItems": 2,
+            "title": "Options"
+          },
+          "accepted_answers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Accepted Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "prompt",
+          "explanation",
+          "task_type",
+          "options"
+        ],
+        "title": "SingleChoiceTaskRequest"
+      },
+      "TaskOptionRequest": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Id"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Position"
+          },
+          "is_correct": {
+            "type": "boolean",
+            "title": "Is Correct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "is_correct"
+        ],
+        "title": "TaskOptionRequest"
+      },
+      "TaskType": {
+        "type": "string",
+        "enum": [
+          "SINGLE_CHOICE",
+          "MULTIPLE_CHOICE",
+          "TEXT_INPUT"
+        ],
+        "title": "TaskType"
+      },
+      "TeacherTaskOptionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Id"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "is_correct": {
+            "type": "boolean",
+            "title": "Is Correct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "media_id",
+          "position",
+          "is_correct"
+        ],
+        "title": "TeacherTaskOptionResponse"
+      },
+      "TeacherTaskResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "lesson_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lesson Id"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "prompt_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Media Id"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "result_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Media Id"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/TeacherTaskOptionResponse"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "accepted_answers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Accepted Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lesson_id",
+          "task_type",
+          "position",
+          "prompt",
+          "prompt_media_id",
+          "explanation",
+          "result_media_id",
+          "options",
+          "accepted_answers"
+        ],
+        "title": "TeacherTaskResponse"
+      },
+      "TextAttemptRequest": {
+        "properties": {
+          "task_type": {
+            "type": "string",
+            "const": "TEXT_INPUT",
+            "title": "Task Type"
+          },
+          "answer_text": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Answer Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_type",
+          "answer_text"
+        ],
+        "title": "TextAttemptRequest"
+      },
+      "TextInputTaskRequest": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Position"
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "prompt_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Media Id"
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Explanation"
+          },
+          "result_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Media Id"
+          },
+          "task_type": {
+            "type": "string",
+            "const": "TEXT_INPUT",
+            "title": "Task Type"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOptionRequest"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "accepted_answers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Accepted Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "prompt",
+          "explanation",
+          "task_type",
+          "accepted_answers"
+        ],
+        "title": "TextInputTaskRequest"
       },
       "UpdateCourseRequest": {
         "properties": {

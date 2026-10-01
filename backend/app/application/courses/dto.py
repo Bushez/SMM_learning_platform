@@ -24,3 +24,12 @@ class ModuleView:
     title: str
     description: str | None
     position: int
+
+
+@dataclass(frozen=True, slots=True)
+class LessonView:
+    id: UUID
+    module_id: UUID
+    title: str
+    description: str | None
+    position: int

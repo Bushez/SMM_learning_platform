@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.application.auth.dto import UserView
 from app.application.courses import CourseService
-from app.application.courses.dto import CourseView, ModuleView
+from app.application.courses.dto import CourseView, LessonView, ModuleView
 from app.domain.courses import CourseStatus
 from app.presentation.api.dependencies import (
     get_course_service,
@@ -84,6 +84,32 @@ class ModuleResponse(BaseModel):
             title=module.title,
             description=module.description,
             position=module.position,
+        )
+
+
+class CreateLessonRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    title: str = Field(min_length=2, max_length=160)
+    description: str | None = Field(default=None, max_length=10_000)
+    position: int = Field(ge=1)
+
+
+class LessonResponse(BaseModel):
+    id: UUID
+    module_id: UUID
+    title: str
+    description: str | None
+    position: int
+
+    @classmethod
+    def from_view(cls, lesson: LessonView) -> "LessonResponse":
+        return cls(
+            id=lesson.id,
+            module_id=lesson.module_id,
+            title=lesson.title,
+            description=lesson.description,
+            position=lesson.position,
         )
 
 
@@ -185,6 +211,24 @@ async def create_module(
 ) -> ModuleResponse:
     return ModuleResponse.from_view(
         await service.add_module(author_id=teacher.id, course_id=course_id, **payload.model_dump())
+    )
+
+
+@teacher_router.post(
+    "/modules/{module_id}/lessons",
+    response_model=LessonResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add lesson to own course module",
+    operation_id="createLesson",
+)
+async def create_lesson(
+    module_id: UUID,
+    payload: CreateLessonRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> LessonResponse:
+    return LessonResponse.from_view(
+        await service.add_lesson(author_id=teacher.id, module_id=module_id, **payload.model_dump())
     )
 
 

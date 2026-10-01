@@ -27,10 +27,16 @@ import type {
 import type {
   CourseResponse,
   CreateCourseRequest,
+  CreateLessonRequest,
   CreateModuleRequest,
   HTTPValidationError,
+  LessonResponse,
   ListTeacherCoursesParams,
   ModuleResponse,
+  MultipleChoiceTaskRequest,
+  SingleChoiceTaskRequest,
+  TeacherTaskResponse,
+  TextInputTaskRequest,
   UpdateCourseRequest
 } from '../models';
 
@@ -478,6 +484,105 @@ export const useCreateCourseModule = <TError = HTTPValidationError,
       > => {
       return useMutation(getCreateCourseModuleMutationOptions(options), queryClient);
     }
+    export type createLessonResponse201 = {
+  data: LessonResponse
+  status: 201
+}
+
+export type createLessonResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type createLessonResponseSuccess = (createLessonResponse201) & {
+  headers: Headers;
+};
+export type createLessonResponseError = (createLessonResponse422) & {
+  headers: Headers;
+};
+
+export type createLessonResponse = (createLessonResponseSuccess | createLessonResponseError)
+
+export const getCreateLessonUrl = (moduleId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/modules/${moduleId}/lessons`
+}
+
+/**
+ * @summary Add lesson to own course module
+ */
+export const createLesson = async (moduleId: string,
+    createLessonRequest: CreateLessonRequest, options?: Parameters<typeof apiFetch>[1]): Promise<createLessonResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<createLessonResponse>(getCreateLessonUrl(moduleId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(createLessonRequest)
+  }
+);}
+
+
+
+
+
+export const getCreateLessonMutationKey = () => ['createLesson'] as const;
+
+export const getCreateLessonMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLesson>>, TError,CreateLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createLesson>>, TError,CreateLessonMutationVariables, TContext> => {
+
+const mutationKey = getCreateLessonMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createLesson>>, CreateLessonMutationVariables> = (props) => {
+          const {moduleId,data} = props ?? {};
+
+          return  createLesson(moduleId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateLessonMutationResult = NonNullable<Awaited<ReturnType<typeof createLesson>>>
+    export type CreateLessonMutationBody = CreateLessonRequest
+    export type CreateLessonMutationError = HTTPValidationError
+    export type CreateLessonMutationVariables = {moduleId: string;data: CreateLessonRequest}
+
+    /**
+ * @summary Add lesson to own course module
+ */
+export const useCreateLesson = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLesson>>, TError,CreateLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createLesson>>,
+        TError,
+        CreateLessonMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateLessonMutationOptions(options), queryClient);
+    }
     export type publishCourseResponse200 = {
   data: CourseResponse
   status: 200
@@ -570,3 +675,215 @@ export const usePublishCourse = <TError = HTTPValidationError,
       > => {
       return useMutation(getPublishCourseMutationOptions(options), queryClient);
     }
+    export type createTaskResponse201 = {
+  data: TeacherTaskResponse
+  status: 201
+}
+
+export type createTaskResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type createTaskResponseSuccess = (createTaskResponse201) & {
+  headers: Headers;
+};
+export type createTaskResponseError = (createTaskResponse422) & {
+  headers: Headers;
+};
+
+export type createTaskResponse = (createTaskResponseSuccess | createTaskResponseError)
+
+export const getCreateTaskUrl = (lessonId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/lessons/${lessonId}/tasks`
+}
+
+/**
+ * @summary Create a task in an owned lesson
+ */
+export const createTask = async (lessonId: string,
+    singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<createTaskResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<createTaskResponse>(getCreateTaskUrl(lessonId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest)
+  }
+);}
+
+
+
+
+
+export const getCreateTaskMutationKey = () => ['createTask'] as const;
+
+export const getCreateTaskMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,CreateTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,CreateTaskMutationVariables, TContext> => {
+
+const mutationKey = getCreateTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTask>>, CreateTaskMutationVariables> = (props) => {
+          const {lessonId,data} = props ?? {};
+
+          return  createTask(lessonId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof createTask>>>
+    export type CreateTaskMutationBody = SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest
+    export type CreateTaskMutationError = HTTPValidationError
+    export type CreateTaskMutationVariables = {lessonId: string;data: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest}
+
+    /**
+ * @summary Create a task in an owned lesson
+ */
+export const useCreateTask = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,CreateTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createTask>>,
+        TError,
+        CreateTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateTaskMutationOptions(options), queryClient);
+    }
+    export type getTeacherTaskResponse200 = {
+  data: TeacherTaskResponse
+  status: 200
+}
+
+export type getTeacherTaskResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type getTeacherTaskResponseSuccess = (getTeacherTaskResponse200) & {
+  headers: Headers;
+};
+export type getTeacherTaskResponseError = (getTeacherTaskResponse422) & {
+  headers: Headers;
+};
+
+export type getTeacherTaskResponse = (getTeacherTaskResponseSuccess | getTeacherTaskResponseError)
+
+export const getGetTeacherTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/tasks/${taskId}`
+}
+
+/**
+ * @summary Get an owned task with editor-only correctness data
+ */
+export const getTeacherTask = async (taskId: string, options?: Parameters<typeof apiFetch>[1]): Promise<getTeacherTaskResponse> => {
+
+  return apiFetch<getTeacherTaskResponse>(getGetTeacherTaskUrl(taskId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTeacherTaskQueryKey = (taskId: string,) => {
+    return [
+    `/api/v1/teacher/tasks/${taskId}`
+    ] as const;
+    }
+
+
+export const getGetTeacherTaskQueryOptions = <TData = Awaited<ReturnType<typeof getTeacherTask>>, TError = HTTPValidationError>(taskId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherTask>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTeacherTaskQueryKey(taskId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTeacherTask>>> = ({ signal }) => getTeacherTask(taskId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: taskId !== null && taskId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTeacherTask>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTeacherTaskQueryResult = NonNullable<Awaited<ReturnType<typeof getTeacherTask>>>
+export type GetTeacherTaskQueryError = HTTPValidationError
+
+
+export function useGetTeacherTask<TData = Awaited<ReturnType<typeof getTeacherTask>>, TError = HTTPValidationError>(
+ taskId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherTask>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeacherTask>>,
+          TError,
+          Awaited<ReturnType<typeof getTeacherTask>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTeacherTask<TData = Awaited<ReturnType<typeof getTeacherTask>>, TError = HTTPValidationError>(
+ taskId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherTask>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeacherTask>>,
+          TError,
+          Awaited<ReturnType<typeof getTeacherTask>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTeacherTask<TData = Awaited<ReturnType<typeof getTeacherTask>>, TError = HTTPValidationError>(
+ taskId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherTask>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get an owned task with editor-only correctness data
+ */
+
+export function useGetTeacherTask<TData = Awaited<ReturnType<typeof getTeacherTask>>, TError = HTTPValidationError>(
+ taskId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherTask>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTeacherTaskQueryOptions(taskId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}

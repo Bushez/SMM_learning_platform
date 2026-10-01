@@ -104,6 +104,15 @@ then stores the file under a generated object key in MinIO and persists only `Me
 internal service endpoint; `MINIO_PUBLIC_ENDPOINT` is the host placed into browser-visible signed
 download URLs (use `localhost:9000` for local Compose).
 
+## Task engine
+
+Teachers can add lessons and author `SINGLE_CHOICE`, `MULTIPLE_CHOICE`, and `TEXT_INPUT` tasks.
+Choice options may contain text, image references, or both. `POST /api/v1/learning/lessons/{lesson_id}/tasks`
+returns a learner-safe model that never includes option correctness, accepted text answers, or explanations.
+`POST /api/v1/learning/tasks/{task_id}/attempts` evaluates the answer on the server and persists an
+attempt history record; feedback is returned only after submission. XP and progress are intentionally
+added in the next phases.
+
 ## Quality commands
 
 ```bash

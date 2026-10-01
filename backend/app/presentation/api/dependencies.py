@@ -10,12 +10,14 @@ from app.application.auth.dto import UserView
 from app.application.common.errors import AuthenticationError, AuthorizationError
 from app.application.courses import CourseService
 from app.application.media import MediaService
+from app.application.tasks import TaskService
 from app.domain.users import Role
 from app.infrastructure.config import Settings
 from app.infrastructure.persistence.sqlalchemy.repositories import (
     SqlAlchemyCourseRepository,
     SqlAlchemyMediaRepository,
     SqlAlchemyRefreshSessionRepository,
+    SqlAlchemyTaskRepository,
     SqlAlchemyUserRepository,
 )
 from app.infrastructure.persistence.sqlalchemy.transaction import SqlAlchemyTransaction
@@ -81,6 +83,14 @@ def get_media_service(
             secure=settings.minio_secure,
         ),
         inspector=PillowImageInspector(max_size_bytes=settings.max_upload_size_bytes),
+        transaction=SqlAlchemyTransaction(session),
+    )
+
+
+def get_task_service(session: AsyncSession = Depends(get_db_session)) -> TaskService:
+    return TaskService(
+        tasks=SqlAlchemyTaskRepository(session),
+        media=SqlAlchemyMediaRepository(session),
         transaction=SqlAlchemyTransaction(session),
     )
 

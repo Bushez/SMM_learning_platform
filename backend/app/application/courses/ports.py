@@ -1,7 +1,7 @@
 from typing import Protocol
 from uuid import UUID
 
-from .dto import CourseView, ModuleView
+from .dto import CourseView, LessonView, ModuleView
 
 
 class CourseRepository(Protocol):
@@ -16,6 +16,8 @@ class CourseRepository(Protocol):
     async def publish_issues(self, course_id: UUID) -> list[str]: ...
     async def add_module(self, **kwargs: object) -> ModuleView: ...
     async def list_modules(self, course_id: UUID) -> list[ModuleView]: ...
+    async def get_module(self, module_id: UUID) -> ModuleView | None: ...
+    async def add_lesson(self, **kwargs: object) -> LessonView: ...
 
 
 class CourseTransaction(Protocol):

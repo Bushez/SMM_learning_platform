@@ -526,9 +526,3 @@ export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUs
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-

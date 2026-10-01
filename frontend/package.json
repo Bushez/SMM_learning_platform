@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "generate-api": "orval --config orval.config.ts"
+    "generate-api": "orval --config orval.config.ts && node scripts/normalize-generated.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

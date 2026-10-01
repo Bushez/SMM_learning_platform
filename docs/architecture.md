@@ -85,6 +85,11 @@ correctness, accepted text answers, correct option IDs, or internal evaluation s
 Correct-answer data may be returned only in post-submission feedback. API tests treat this
 as a security invariant.
 
+The task application module owns authoring validation, learner projections, evaluation dispatch, and
+attempt recording. A pure domain evaluator compares choice sets exactly and normalizes text with NFKC,
+whitespace collapse, and case folding. `task_attempts` is append-only history; it intentionally does
+not award XP or mark progress until those phases introduce their own idempotent records.
+
 ## Progress, XP, and streak
 
 - A unique `(user_id, task_id)` progress row records first correct completion.

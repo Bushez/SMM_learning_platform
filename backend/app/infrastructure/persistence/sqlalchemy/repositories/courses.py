@@ -1,13 +1,20 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.courses.dto import CourseView, ModuleView
+from app.application.courses.dto import CourseView, LessonView, ModuleView
 from app.domain.courses import CourseStatus
 
-from ..models import CourseModel, CourseModuleModel, LessonModel, TaskModel
+from ..models import (
+    CourseModel,
+    CourseModuleModel,
+    LessonModel,
+    TaskAcceptedAnswerModel,
+    TaskModel,
+    TaskOptionModel,
+)
 
 
 def _course_view(model: CourseModel) -> CourseView:
@@ -28,6 +35,16 @@ def _module_view(model: CourseModuleModel) -> ModuleView:
     return ModuleView(
         id=model.id,
         course_id=model.course_id,
+        title=model.title,
+        description=model.description,
+        position=model.position,
+    )
+
+
+def _lesson_view(model: LessonModel) -> LessonView:
+    return LessonView(
+        id=model.id,
+        module_id=model.module_id,
         title=model.title,
         description=model.description,
         position=model.position,
@@ -99,6 +116,16 @@ class SqlAlchemyCourseRepository:
         )
         return [_module_view(model) for model in result]
 
+    async def get_module(self, module_id: UUID) -> ModuleView | None:
+        model = await self._session.get(CourseModuleModel, module_id)
+        return None if model is None else _module_view(model)
+
+    async def add_lesson(self, **kwargs: object) -> LessonView:
+        model = LessonModel(**kwargs)
+        self._session.add(model)
+        await self._session.flush()
+        return _lesson_view(model)
+
     async def publish_issues(self, course_id: UUID) -> list[str]:
         modules = await self._session.scalar(
             select(CourseModuleModel.id).where(CourseModuleModel.course_id == course_id).limit(1)
@@ -113,11 +140,48 @@ class SqlAlchemyCourseRepository:
         )
         if lessons is None:
             return ["Course needs at least one lesson"]
-        tasks = await self._session.scalar(
-            select(TaskModel.id)
-            .join(LessonModel, TaskModel.lesson_id == LessonModel.id)
-            .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
-            .where(CourseModuleModel.course_id == course_id)
-            .limit(1)
+        task_models = list(
+            await self._session.scalars(
+                select(TaskModel)
+                .join(LessonModel, TaskModel.lesson_id == LessonModel.id)
+                .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
+                .where(CourseModuleModel.course_id == course_id)
+            )
         )
-        return [] if tasks is not None else ["Course needs at least one task"]
+        if not task_models:
+            return ["Course needs at least one task"]
+        task_ids = [task.id for task in task_models]
+        option_counts = {
+            task_id: (count, correct_count)
+            for task_id, count, correct_count in await self._session.execute(
+                select(
+                    TaskOptionModel.task_id,
+                    func.count(TaskOptionModel.id),
+                    func.coalesce(
+                        func.sum(case((TaskOptionModel.is_correct.is_(True), 1), else_=0)), 0
+                    ),
+                )
+                .where(TaskOptionModel.task_id.in_(task_ids))
+                .group_by(TaskOptionModel.task_id)
+            )
+        }
+        accepted_counts = {
+            task_id: count
+            for task_id, count in await self._session.execute(
+                select(TaskAcceptedAnswerModel.task_id, func.count(TaskAcceptedAnswerModel.id))
+                .where(TaskAcceptedAnswerModel.task_id.in_(task_ids))
+                .group_by(TaskAcceptedAnswerModel.task_id)
+            )
+        }
+        issues: list[str] = []
+        for task in task_models:
+            option_count, correct_count = option_counts.get(task.id, (0, 0))
+            if task.task_type == "SINGLE_CHOICE" and (option_count < 2 or correct_count != 1):
+                issues.append(
+                    f"Task {task.id} must have at least two options and exactly one correct option"
+                )
+            if task.task_type == "MULTIPLE_CHOICE" and (option_count < 2 or correct_count < 1):
+                issues.append(f"Task {task.id} must have at least two options and a correct option")
+            if task.task_type == "TEXT_INPUT" and accepted_counts.get(task.id, 0) < 1:
+                issues.append(f"Task {task.id} must have an accepted text answer")
+        return issues

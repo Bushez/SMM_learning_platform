@@ -3,6 +3,7 @@ from .courses import (
     CourseModuleModel,
     LessonModel,
     TaskAcceptedAnswerModel,
+    TaskAttemptModel,
     TaskModel,
     TaskOptionModel,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "MediaAssetModel",
     "RefreshSessionModel",
     "TaskAcceptedAnswerModel",
+    "TaskAttemptModel",
     "TaskModel",
     "TaskOptionModel",
     "UserModel",

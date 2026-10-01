@@ -274,9 +274,3 @@ export function useGetReadiness<TData = Awaited<ReturnType<typeof getReadiness>>
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-
