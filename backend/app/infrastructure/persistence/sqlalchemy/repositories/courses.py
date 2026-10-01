@@ -17,6 +17,7 @@ def _course_view(model: CourseModel) -> CourseView:
         title=model.title,
         slug=model.slug,
         description=model.description,
+        cover_media_id=model.cover_media_id,
         category=model.category,
         language_code=model.language_code,
         status=CourseStatus(model.status),

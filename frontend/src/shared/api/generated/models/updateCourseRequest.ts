@@ -10,6 +10,7 @@ export interface UpdateCourseRequest {
   title?: string | null;
   slug?: string | null;
   description?: string | null;
+  cover_media_id?: string | null;
   category?: string | null;
   language_code?: string | null;
 }

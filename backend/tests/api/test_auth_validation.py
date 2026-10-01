@@ -22,3 +22,15 @@ def test_register_validation_error_uses_the_standard_error_contract() -> None:
     assert body["error"]["code"] == "validation_error"
     assert body["error"]["trace_id"]
     assert isinstance(body["error"]["details"], list)
+
+
+def test_media_upload_requires_teacher_authentication() -> None:
+    application = create_app(Settings(app_env="test"))
+    with TestClient(application) as client:
+        response = client.post(
+            "/api/v1/media/images",
+            files={"file": ("image.png", b"not-an-image", "image/png")},
+        )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "authentication_failed"

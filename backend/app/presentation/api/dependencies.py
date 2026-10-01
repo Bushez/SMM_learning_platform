@@ -9,10 +9,12 @@ from app.application.auth import AuthService
 from app.application.auth.dto import UserView
 from app.application.common.errors import AuthenticationError, AuthorizationError
 from app.application.courses import CourseService
+from app.application.media import MediaService
 from app.domain.users import Role
 from app.infrastructure.config import Settings
 from app.infrastructure.persistence.sqlalchemy.repositories import (
     SqlAlchemyCourseRepository,
+    SqlAlchemyMediaRepository,
     SqlAlchemyRefreshSessionRepository,
     SqlAlchemyUserRepository,
 )
@@ -22,6 +24,7 @@ from app.infrastructure.security import (
     JwtAccessTokenIssuer,
     SecureRefreshTokenManager,
 )
+from app.infrastructure.storage import MinioStorage, PillowImageInspector
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -57,6 +60,26 @@ def get_auth_service(
 def get_course_service(session: AsyncSession = Depends(get_db_session)) -> CourseService:
     return CourseService(
         courses=SqlAlchemyCourseRepository(session),
+        media=SqlAlchemyMediaRepository(session),
+        transaction=SqlAlchemyTransaction(session),
+    )
+
+
+def get_media_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> MediaService:
+    settings: Settings = request.app.state.settings
+    return MediaService(
+        media=SqlAlchemyMediaRepository(session),
+        storage=MinioStorage(
+            endpoint=settings.minio_endpoint,
+            public_endpoint=settings.minio_public_endpoint,
+            access_key=settings.minio_access_key,
+            secret_key=settings.minio_secret_key,
+            bucket=settings.minio_bucket,
+            secure=settings.minio_secure,
+        ),
+        inspector=PillowImageInspector(max_size_bytes=settings.max_upload_size_bytes),
         transaction=SqlAlchemyTransaction(session),
     )
 

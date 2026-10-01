@@ -122,9 +122,12 @@ initial content-presence checks to type-specific task rules as task authoring en
 ## Media lifecycle
 
 Uploads are validated by MIME type, extension, byte limit, and successful image decode before
-storage under a random object key. PostgreSQL stores metadata and references. Physical objects
-are never deleted while referenced. Orphan uploads are recorded and cleaned by a later periodic
-management command after a conservative age threshold.
+storage under a random object key. PostgreSQL stores metadata and references. If metadata
+persistence fails after a successful object upload, the application immediately deletes that new
+object. Physical objects are otherwise never deleted while referenced; a future conservative
+orphan-cleanup command may address failures outside that request lifecycle. MinIO uses an internal
+endpoint for backend traffic and a separately configured public endpoint for browser-visible signed
+download URLs.
 
 ## Frontend and API contract
 

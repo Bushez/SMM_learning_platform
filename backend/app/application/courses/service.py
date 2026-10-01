@@ -1,7 +1,8 @@
 import re
 from uuid import UUID
 
-from app.application.common.errors import AuthorizationError, NotFoundError
+from app.application.common.errors import AuthorizationError, NotFoundError, ValidationError
+from app.application.media.ports import MediaRepository
 from app.domain.courses import CourseStatus
 
 from .dto import CourseView, ModuleView
@@ -14,8 +15,15 @@ def slugify(value: str) -> str:
 
 
 class CourseService:
-    def __init__(self, *, courses: CourseRepository, transaction: CourseTransaction) -> None:
+    def __init__(
+        self,
+        *,
+        courses: CourseRepository,
+        media: MediaRepository,
+        transaction: CourseTransaction,
+    ) -> None:
         self._courses = courses
+        self._media = media
         self._transaction = transaction
 
     async def create_course(
@@ -67,6 +75,12 @@ class CourseService:
         await self.teacher_course(author_id=author_id, course_id=course_id)
         if "slug" in changes:
             changes["slug"] = slugify(str(changes["slug"]))
+        if "cover_media_id" in changes and changes["cover_media_id"] is not None:
+            is_owner = await self._media.is_owned_by(
+                media_id=UUID(str(changes["cover_media_id"])), owner_id=author_id
+            )
+            if not is_owner:
+                raise ValidationError("Course cover must be an image uploaded by this teacher")
         course = await self._courses.update_course(course_id, **changes)
         await self._transaction.commit()
         return course

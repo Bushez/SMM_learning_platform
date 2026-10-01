@@ -7,6 +7,7 @@
  */
 
 export * from './authResponse';
+export * from './bodyUploadImage';
 export * from './courseResponse';
 export * from './courseStatus';
 export * from './createCourseRequest';
@@ -16,6 +17,7 @@ export * from './hTTPValidationError';
 export * from './listCoursesParams';
 export * from './listTeacherCoursesParams';
 export * from './loginRequest';
+export * from './mediaAssetResponse';
 export * from './moduleResponse';
 export * from './readinessChecks';
 export * from './readinessResponse';

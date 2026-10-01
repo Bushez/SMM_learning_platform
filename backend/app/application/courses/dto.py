@@ -11,6 +11,7 @@ class CourseView:
     title: str
     slug: str
     description: str
+    cover_media_id: UUID | None
     category: str
     language_code: str
     status: CourseStatus

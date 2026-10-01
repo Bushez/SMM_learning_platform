@@ -16,6 +16,7 @@ class FakeCourses:
             title="Draft",
             slug="draft",
             description="Description",
+            cover_media_id=None,
             category="Photography",
             language_code="ru",
             status=CourseStatus.DRAFT,
@@ -45,6 +46,7 @@ class FakeCourses:
             title=self.course.title,
             slug=self.course.slug,
             description=self.course.description,
+            cover_media_id=self.course.cover_media_id,
             category=self.course.category,
             language_code=self.course.language_code,
             status=status,
@@ -63,8 +65,13 @@ class FakeTransaction:
         return None
 
 
+class FakeMedia:
+    async def is_owned_by(self, **_: object) -> bool:
+        return True
+
+
 def make_service(courses: FakeCourses) -> CourseService:
-    return CourseService(courses=courses, transaction=FakeTransaction())
+    return CourseService(courses=courses, media=FakeMedia(), transaction=FakeTransaction())
 
 
 @pytest.mark.asyncio

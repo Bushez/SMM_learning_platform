@@ -24,3 +24,8 @@ class AuthorizationError(ApplicationError):
 class NotFoundError(ApplicationError):
     status_code = 404
     code = "not_found"
+
+
+class ValidationError(ApplicationError):
+    status_code = 422
+    code = "validation_error"

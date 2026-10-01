@@ -95,6 +95,15 @@ returned by `/api/v1/courses`; draft content is never exposed through learner en
 is server-side validated and currently requires at least one module, lesson, and task. Course,
 module, lesson, task, option, and accepted-answer schema is introduced through Alembic migrations.
 
+## Teacher media uploads
+
+Teachers upload JPEG, PNG, and WebP images through `POST /api/v1/media/images`. The backend reads
+no more than `MAX_UPLOAD_SIZE_BYTES`, verifies the actual image format and dimensions with Pillow,
+then stores the file under a generated object key in MinIO and persists only `MediaAsset` metadata.
+`cover_media_id` can be set only to an asset owned by the course teacher. `MINIO_ENDPOINT` is the
+internal service endpoint; `MINIO_PUBLIC_ENDPOINT` is the host placed into browser-visible signed
+download URLs (use `localhost:9000` for local Compose).
+
 ## Quality commands
 
 ```bash
@@ -121,12 +130,6 @@ pnpm generate-api
 
 `openapi.json` is generated from FastAPI. Files under `frontend/src/shared/api/generated` are
 generated artifacts and must not be edited manually.
-
-## Upcoming management commands
-
-The authentication phase will add an idempotent `promote_teacher <email>` command and development
-seed command. There will be no public role-promotion endpoint. Seed credentials will remain
-explicitly development-only.
 
 ## VPS notes
 

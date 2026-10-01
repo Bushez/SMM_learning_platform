@@ -21,6 +21,7 @@ class CourseResponse(BaseModel):
     title: str
     slug: str
     description: str
+    cover_media_id: UUID | None
     category: str
     language_code: str
     status: CourseStatus
@@ -32,6 +33,7 @@ class CourseResponse(BaseModel):
             title=course.title,
             slug=course.slug,
             description=course.description,
+            cover_media_id=course.cover_media_id,
             category=course.category,
             language_code=course.language_code,
             status=course.status,
@@ -54,6 +56,7 @@ class UpdateCourseRequest(BaseModel):
     title: str | None = Field(default=None, min_length=2, max_length=160)
     slug: str | None = Field(default=None, min_length=2, max_length=180)
     description: str | None = Field(default=None, min_length=1, max_length=10_000)
+    cover_media_id: UUID | None = None
     category: str | None = Field(default=None, min_length=2, max_length=80)
     language_code: str | None = Field(default=None, min_length=2, max_length=16)
 

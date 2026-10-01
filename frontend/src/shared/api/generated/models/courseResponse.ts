@@ -12,6 +12,7 @@ export interface CourseResponse {
   title: string;
   slug: string;
   description: string;
+  cover_media_id: string | null;
   category: string;
   language_code: string;
   status: CourseStatus;
