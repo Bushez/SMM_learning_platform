@@ -23,6 +23,22 @@ class TaskRepository(Protocol):
 
     async def get_teacher_task(self, task_id: UUID) -> TeacherTaskView | None: ...
 
+    async def has_learner_progress(self, task_id: UUID) -> bool: ...
+
+    async def replace_task(
+        self,
+        *,
+        task_id: UUID,
+        task_type: str,
+        position: int,
+        prompt: str,
+        prompt_media_id: UUID | None,
+        explanation: str,
+        result_media_id: UUID | None,
+        options: list[dict[str, object]],
+        accepted_answers: list[str],
+    ) -> TeacherTaskView: ...
+
     async def list_teacher_tasks(self, course_id: UUID) -> list[TeacherTaskView]: ...
 
     async def list_learner_tasks(self, lesson_id: UUID) -> list[LearnerTaskView] | None: ...

@@ -1,10 +1,19 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import and_, exists, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.media.dto import MediaAssetView
+from app.domain.courses import CourseStatus
 
+from ..models.courses import (
+    CourseEnrollmentModel,
+    CourseModel,
+    CourseModuleModel,
+    LessonModel,
+    TaskModel,
+    TaskOptionModel,
+)
 from ..models.media import MediaAssetModel
 
 
@@ -59,3 +68,41 @@ class SqlAlchemyMediaRepository:
             )
         )
         return found is not None
+
+    async def can_download(self, *, media_id: UUID, requester_id: UUID) -> bool:
+        asset = await self._session.get(MediaAssetModel, media_id)
+        if asset is None:
+            return False
+        if asset.owner_id == requester_id:
+            return True
+
+        published_statuses = [CourseStatus.PUBLISHED.value, CourseStatus.ARCHIVED.value]
+        public_cover = exists(
+            select(CourseModel.id).where(
+                CourseModel.cover_media_id == media_id,
+                CourseModel.status.in_(published_statuses),
+            )
+        )
+        enrolled_task_media = exists(
+            select(TaskModel.id)
+            .join(LessonModel, TaskModel.lesson_id == LessonModel.id)
+            .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
+            .join(CourseModel, CourseModuleModel.course_id == CourseModel.id)
+            .join(
+                CourseEnrollmentModel,
+                and_(
+                    CourseEnrollmentModel.course_id == CourseModel.id,
+                    CourseEnrollmentModel.user_id == requester_id,
+                ),
+            )
+            .outerjoin(TaskOptionModel, TaskOptionModel.task_id == TaskModel.id)
+            .where(
+                CourseModel.status.in_(published_statuses),
+                or_(
+                    TaskModel.prompt_media_id == media_id,
+                    TaskModel.result_media_id == media_id,
+                    TaskOptionModel.media_id == media_id,
+                ),
+            )
+        )
+        return bool(await self._session.scalar(select(or_(public_cover, enrolled_task_media))))

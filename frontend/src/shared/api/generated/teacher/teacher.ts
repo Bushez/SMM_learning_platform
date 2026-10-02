@@ -986,6 +986,105 @@ export const useCreateTask = <TError = HTTPValidationError,
       > => {
       return useMutation(getCreateTaskMutationOptions(options), queryClient);
     }
+    export type replaceTeacherTaskResponse200 = {
+  data: TeacherTaskResponse
+  status: 200
+}
+
+export type replaceTeacherTaskResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type replaceTeacherTaskResponseSuccess = (replaceTeacherTaskResponse200) & {
+  headers: Headers;
+};
+export type replaceTeacherTaskResponseError = (replaceTeacherTaskResponse422) & {
+  headers: Headers;
+};
+
+export type replaceTeacherTaskResponse = (replaceTeacherTaskResponseSuccess | replaceTeacherTaskResponseError)
+
+export const getReplaceTeacherTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/tasks/${taskId}`
+}
+
+/**
+ * @summary Replace an owned task that has no learner progress
+ */
+export const replaceTeacherTask = async (taskId: string,
+    singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<replaceTeacherTaskResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<replaceTeacherTaskResponse>(getReplaceTeacherTaskUrl(taskId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest)
+  }
+);}
+
+
+
+
+
+export const getReplaceTeacherTaskMutationKey = () => ['replaceTeacherTask'] as const;
+
+export const getReplaceTeacherTaskMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof replaceTeacherTask>>, TError,ReplaceTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof replaceTeacherTask>>, TError,ReplaceTeacherTaskMutationVariables, TContext> => {
+
+const mutationKey = getReplaceTeacherTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof replaceTeacherTask>>, ReplaceTeacherTaskMutationVariables> = (props) => {
+          const {taskId,data} = props ?? {};
+
+          return  replaceTeacherTask(taskId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReplaceTeacherTaskMutationResult = NonNullable<Awaited<ReturnType<typeof replaceTeacherTask>>>
+    export type ReplaceTeacherTaskMutationBody = SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest
+    export type ReplaceTeacherTaskMutationError = HTTPValidationError
+    export type ReplaceTeacherTaskMutationVariables = {taskId: string;data: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest}
+
+    /**
+ * @summary Replace an owned task that has no learner progress
+ */
+export const useReplaceTeacherTask = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof replaceTeacherTask>>, TError,ReplaceTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof replaceTeacherTask>>,
+        TError,
+        ReplaceTeacherTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getReplaceTeacherTaskMutationOptions(options), queryClient);
+    }
     export type getTeacherTaskResponse200 = {
   data: TeacherTaskResponse
   status: 200

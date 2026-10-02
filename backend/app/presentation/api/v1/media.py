@@ -64,13 +64,13 @@ async def upload_image(
 @router.get(
     "/{media_id}/download",
     status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-    summary="Get a temporary download URL for an owned media asset",
-    operation_id="downloadOwnedMedia",
+    summary="Get a temporary download URL for accessible course media",
+    operation_id="downloadMedia",
 )
 async def download_owned_media(
     media_id: UUID,
     user: UserView = Depends(require_authenticated_user),
     service: MediaService = Depends(get_media_service),
 ) -> RedirectResponse:
-    url = await service.get_owned_download_url(owner_id=user.id, media_id=media_id)
+    url = await service.get_download_url(requester_id=user.id, media_id=media_id)
     return RedirectResponse(url=url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)

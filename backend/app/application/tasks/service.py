@@ -74,6 +74,46 @@ class TaskService:
             raise AuthorizationError("You do not own this task")
         return task
 
+    async def replace_task(
+        self,
+        *,
+        author_id: UUID,
+        task_id: UUID,
+        task_type: TaskType,
+        position: int,
+        prompt: str,
+        prompt_media_id: UUID | None,
+        explanation: str,
+        result_media_id: UUID | None,
+        options: list[dict[str, object]],
+        accepted_answers: list[str],
+    ) -> TeacherTaskView:
+        await self.teacher_task(author_id=author_id, task_id=task_id)
+        if await self._tasks.has_learner_progress(task_id):
+            from app.application.common.errors import ConflictError
+
+            raise ConflictError("Tasks with learner progress cannot be structurally edited")
+        self._validate_definition(
+            task_type=task_type, options=options, accepted_answers=accepted_answers
+        )
+        await self._validate_media_ownership(
+            author_id=author_id,
+            media_ids=self._media_ids(prompt_media_id, result_media_id, options),
+        )
+        task = await self._tasks.replace_task(
+            task_id=task_id,
+            task_type=task_type.value,
+            position=position,
+            prompt=prompt.strip(),
+            prompt_media_id=prompt_media_id,
+            explanation=explanation.strip(),
+            result_media_id=result_media_id,
+            options=options,
+            accepted_answers=[normalize_text_answer(value) for value in accepted_answers],
+        )
+        await self._transaction.commit()
+        return task
+
     async def teacher_course_tasks(
         self, *, author_id: UUID, course_id: UUID
     ) -> list[TeacherTaskView]:

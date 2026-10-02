@@ -53,8 +53,10 @@ class MediaService:
             raise
         return asset
 
-    async def get_owned_download_url(self, *, owner_id: UUID, media_id: UUID) -> str:
+    async def get_download_url(self, *, requester_id: UUID, media_id: UUID) -> str:
         asset = await self._media.get(media_id)
-        if asset is None or asset.owner_id != owner_id:
+        if asset is None or not await self._media.can_download(
+            media_id=media_id, requester_id=requester_id
+        ):
             raise NotFoundError("Media asset not found")
         return await self._storage.get_download_url(object_key=asset.object_key)

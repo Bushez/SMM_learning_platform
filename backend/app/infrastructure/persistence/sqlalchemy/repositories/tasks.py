@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.tasks.dto import (
@@ -121,6 +121,59 @@ class SqlAlchemyTaskRepository:
             options=tuple(_editor_option(option) for option in options),
             accepted_answers=tuple(answers),
         )
+
+    async def has_learner_progress(self, task_id: UUID) -> bool:
+        from ..models import UserTaskProgressModel
+
+        return await self._session.scalar(
+            select(UserTaskProgressModel.task_id)
+            .where(UserTaskProgressModel.task_id == task_id)
+            .limit(1)
+        ) is not None
+
+    async def replace_task(
+        self,
+        *,
+        task_id: UUID,
+        task_type: str,
+        position: int,
+        prompt: str,
+        prompt_media_id: UUID | None,
+        explanation: str,
+        result_media_id: UUID | None,
+        options: list[dict[str, object]],
+        accepted_answers: list[str],
+    ) -> TeacherTaskView:
+        task = await self._session.get(TaskModel, task_id, with_for_update=True)
+        if task is None:
+            raise RuntimeError("Task was removed during update")
+        await self._session.execute(
+            delete(TaskOptionModel).where(TaskOptionModel.task_id == task_id)
+        )
+        await self._session.execute(
+            delete(TaskAcceptedAnswerModel).where(TaskAcceptedAnswerModel.task_id == task_id)
+        )
+        task.task_type = task_type
+        task.position = position
+        task.prompt = prompt
+        task.prompt_media_id = prompt_media_id
+        task.explanation = explanation
+        task.result_media_id = result_media_id
+        self._session.add_all(
+            [
+                TaskOptionModel(task_id=task_id, **option)
+                for option in options
+            ]
+            + [
+                TaskAcceptedAnswerModel(task_id=task_id, normalized_value=value)
+                for value in accepted_answers
+            ]
+        )
+        await self._session.flush()
+        updated = await self.get_teacher_task(task_id)
+        if updated is None:
+            raise RuntimeError("Task disappeared during update")
+        return updated
 
     async def list_teacher_tasks(self, course_id: UUID) -> list[TeacherTaskView]:
         task_ids = list(

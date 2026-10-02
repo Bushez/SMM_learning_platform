@@ -146,24 +146,24 @@ export const useUploadImage = <TError = HTTPValidationError,
       > => {
       return useMutation(getUploadImageMutationOptions(options), queryClient);
     }
-    export type downloadOwnedMediaResponse307 = {
+    export type downloadMediaResponse307 = {
   data: unknown
   status: 307
 }
 
-export type downloadOwnedMediaResponse422 = {
+export type downloadMediaResponse422 = {
   data: HTTPValidationError
   status: 422
 }
 
 ;
-export type downloadOwnedMediaResponseError = (downloadOwnedMediaResponse307 | downloadOwnedMediaResponse422) & {
+export type downloadMediaResponseError = (downloadMediaResponse307 | downloadMediaResponse422) & {
   headers: Headers;
 };
 
-export type downloadOwnedMediaResponse = (downloadOwnedMediaResponseError)
+export type downloadMediaResponse = (downloadMediaResponseError)
 
-export const getDownloadOwnedMediaUrl = (mediaId: string,) => {
+export const getDownloadMediaUrl = (mediaId: string,) => {
 
 
 
@@ -172,11 +172,11 @@ export const getDownloadOwnedMediaUrl = (mediaId: string,) => {
 }
 
 /**
- * @summary Get a temporary download URL for an owned media asset
+ * @summary Get a temporary download URL for accessible course media
  */
-export const downloadOwnedMedia = async (mediaId: string, options?: Parameters<typeof apiFetch>[1]): Promise<downloadOwnedMediaResponse> => {
+export const downloadMedia = async (mediaId: string, options?: Parameters<typeof apiFetch>[1]): Promise<downloadMediaResponse> => {
 
-  return apiFetch<downloadOwnedMediaResponse>(getDownloadOwnedMediaUrl(mediaId),
+  return apiFetch<downloadMediaResponse>(getDownloadMediaUrl(mediaId),
   {
     ...options,
     method: 'GET'
@@ -189,69 +189,69 @@ export const downloadOwnedMedia = async (mediaId: string, options?: Parameters<t
 
 
 
-export const getDownloadOwnedMediaQueryKey = (mediaId: string,) => {
+export const getDownloadMediaQueryKey = (mediaId: string,) => {
     return [
     `/api/v1/media/${mediaId}/download`
     ] as const;
     }
 
 
-export const getDownloadOwnedMediaQueryOptions = <TData = Awaited<ReturnType<typeof downloadOwnedMedia>>, TError = unknown | HTTPValidationError>(mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadOwnedMedia>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+export const getDownloadMediaQueryOptions = <TData = Awaited<ReturnType<typeof downloadMedia>>, TError = unknown | HTTPValidationError>(mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadMedia>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getDownloadOwnedMediaQueryKey(mediaId);
+  const queryKey =  queryOptions?.queryKey ?? getDownloadMediaQueryKey(mediaId);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadOwnedMedia>>> = ({ signal }) => downloadOwnedMedia(mediaId, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadMedia>>> = ({ signal }) => downloadMedia(mediaId, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: mediaId !== null && mediaId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadOwnedMedia>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: mediaId !== null && mediaId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadMedia>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type DownloadOwnedMediaQueryResult = NonNullable<Awaited<ReturnType<typeof downloadOwnedMedia>>>
-export type DownloadOwnedMediaQueryError = unknown | HTTPValidationError
+export type DownloadMediaQueryResult = NonNullable<Awaited<ReturnType<typeof downloadMedia>>>
+export type DownloadMediaQueryError = unknown | HTTPValidationError
 
 
-export function useDownloadOwnedMedia<TData = Awaited<ReturnType<typeof downloadOwnedMedia>>, TError = unknown | HTTPValidationError>(
- mediaId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadOwnedMedia>>, TError, TData>> & Pick<
+export function useDownloadMedia<TData = Awaited<ReturnType<typeof downloadMedia>>, TError = unknown | HTTPValidationError>(
+ mediaId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadMedia>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadOwnedMedia>>,
+          Awaited<ReturnType<typeof downloadMedia>>,
           TError,
-          Awaited<ReturnType<typeof downloadOwnedMedia>>
+          Awaited<ReturnType<typeof downloadMedia>>
         > , 'initialData'
       >, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useDownloadOwnedMedia<TData = Awaited<ReturnType<typeof downloadOwnedMedia>>, TError = unknown | HTTPValidationError>(
- mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadOwnedMedia>>, TError, TData>> & Pick<
+export function useDownloadMedia<TData = Awaited<ReturnType<typeof downloadMedia>>, TError = unknown | HTTPValidationError>(
+ mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadMedia>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof downloadOwnedMedia>>,
+          Awaited<ReturnType<typeof downloadMedia>>,
           TError,
-          Awaited<ReturnType<typeof downloadOwnedMedia>>
+          Awaited<ReturnType<typeof downloadMedia>>
         > , 'initialData'
       >, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useDownloadOwnedMedia<TData = Awaited<ReturnType<typeof downloadOwnedMedia>>, TError = unknown | HTTPValidationError>(
- mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadOwnedMedia>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+export function useDownloadMedia<TData = Awaited<ReturnType<typeof downloadMedia>>, TError = unknown | HTTPValidationError>(
+ mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadMedia>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get a temporary download URL for an owned media asset
+ * @summary Get a temporary download URL for accessible course media
  */
 
-export function useDownloadOwnedMedia<TData = Awaited<ReturnType<typeof downloadOwnedMedia>>, TError = unknown | HTTPValidationError>(
- mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadOwnedMedia>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+export function useDownloadMedia<TData = Awaited<ReturnType<typeof downloadMedia>>, TError = unknown | HTTPValidationError>(
+ mediaId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadMedia>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getDownloadOwnedMediaQueryOptions(mediaId,options)
+  const queryOptions = getDownloadMediaQueryOptions(mediaId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

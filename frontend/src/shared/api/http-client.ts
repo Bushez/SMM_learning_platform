@@ -88,7 +88,9 @@ export async function apiFetch<T>(
 
 export async function apiFetchBlob(path: string, retryAfterRefresh = true): Promise<Blob> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
+    // The authenticated API response redirects to a signed, cross-origin MinIO URL.
+    // The signed URL is self-contained and must not carry browser cookies.
+    credentials: "omit",
     headers: {
       Accept: "image/*",
       ...(accessToken === null ? {} : { Authorization: `Bearer ${accessToken}` }),

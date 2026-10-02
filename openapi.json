@@ -776,8 +776,8 @@
         "tags": [
           "Media"
         ],
-        "summary": "Get a temporary download URL for an owned media asset",
-        "operationId": "downloadOwnedMedia",
+        "summary": "Get a temporary download URL for accessible course media",
+        "operationId": "downloadMedia",
         "security": [
           {
             "HTTPBearer": []
@@ -1161,6 +1161,81 @@
       }
     },
     "/api/v1/teacher/tasks/{task_id}": {
+      "put": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Replace an owned task that has no learner progress",
+        "operationId": "replaceTeacherTask",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleChoiceTaskRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MultipleChoiceTaskRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TextInputTaskRequest"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "task_type",
+                  "mapping": {
+                    "SINGLE_CHOICE": "#/components/schemas/SingleChoiceTaskRequest",
+                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceTaskRequest",
+                    "TEXT_INPUT": "#/components/schemas/TextInputTaskRequest"
+                  }
+                },
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "Teacher"

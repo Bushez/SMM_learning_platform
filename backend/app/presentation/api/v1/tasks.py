@@ -226,6 +226,24 @@ async def create_task(
     return TeacherTaskResponse.from_view(task)
 
 
+@teacher_router.put(
+    "/tasks/{task_id}",
+    response_model=TeacherTaskResponse,
+    summary="Replace an owned task that has no learner progress",
+    operation_id="replaceTeacherTask",
+)
+async def replace_task(
+    task_id: UUID,
+    payload: CreateTaskRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: TaskService = Depends(get_task_service),
+) -> TeacherTaskResponse:
+    data = payload.model_dump()
+    data["options"] = [option.model_dump() for option in payload.options]
+    task = await service.replace_task(author_id=teacher.id, task_id=task_id, **data)
+    return TeacherTaskResponse.from_view(task)
+
+
 @teacher_router.get(
     "/tasks/{task_id}",
     response_model=TeacherTaskResponse,
