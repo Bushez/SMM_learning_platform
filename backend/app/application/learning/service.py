@@ -12,7 +12,10 @@ class LearningService:
         self._transaction = transaction
 
     async def enroll_or_start(self, *, user_id: UUID, course_id: UUID) -> CourseProgressView:
-        progress = await self._learning.enroll(user_id=user_id, course_id=course_id)
+        try:
+            progress = await self._learning.enroll(user_id=user_id, course_id=course_id)
+        except LookupError as error:
+            raise NotFoundError("Published course not found") from error
         await self._transaction.commit()
         return progress
 

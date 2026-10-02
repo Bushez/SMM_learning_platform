@@ -276,3 +276,19 @@ async def publish_course(
     return CourseResponse.from_view(
         await service.publish(author_id=teacher.id, course_id=course_id)
     )
+
+
+@teacher_router.post(
+    "/{course_id}/archive",
+    response_model=CourseResponse,
+    summary="Archive own course without deleting learner progress",
+    operation_id="archiveCourse",
+)
+async def archive_course(
+    course_id: UUID,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> CourseResponse:
+    return CourseResponse.from_view(
+        await service.archive(author_id=teacher.id, course_id=course_id)
+    )

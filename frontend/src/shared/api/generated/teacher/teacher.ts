@@ -795,6 +795,98 @@ export const usePublishCourse = <TError = HTTPValidationError,
       > => {
       return useMutation(getPublishCourseMutationOptions(options), queryClient);
     }
+    export type archiveCourseResponse200 = {
+  data: CourseResponse
+  status: 200
+}
+
+export type archiveCourseResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type archiveCourseResponseSuccess = (archiveCourseResponse200) & {
+  headers: Headers;
+};
+export type archiveCourseResponseError = (archiveCourseResponse422) & {
+  headers: Headers;
+};
+
+export type archiveCourseResponse = (archiveCourseResponseSuccess | archiveCourseResponseError)
+
+export const getArchiveCourseUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/${courseId}/archive`
+}
+
+/**
+ * @summary Archive own course without deleting learner progress
+ */
+export const archiveCourse = async (courseId: string, options?: Parameters<typeof apiFetch>[1]): Promise<archiveCourseResponse> => {
+
+  return apiFetch<archiveCourseResponse>(getArchiveCourseUrl(courseId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getArchiveCourseMutationKey = () => ['archiveCourse'] as const;
+
+export const getArchiveCourseMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof archiveCourse>>, TError,ArchiveCourseMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof archiveCourse>>, TError,ArchiveCourseMutationVariables, TContext> => {
+
+const mutationKey = getArchiveCourseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof archiveCourse>>, ArchiveCourseMutationVariables> = (props) => {
+          const {courseId} = props ?? {};
+
+          return  archiveCourse(courseId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ArchiveCourseMutationResult = NonNullable<Awaited<ReturnType<typeof archiveCourse>>>
+
+    export type ArchiveCourseMutationError = HTTPValidationError
+    export type ArchiveCourseMutationVariables = {courseId: string}
+
+    /**
+ * @summary Archive own course without deleting learner progress
+ */
+export const useArchiveCourse = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof archiveCourse>>, TError,ArchiveCourseMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof archiveCourse>>,
+        TError,
+        ArchiveCourseMutationVariables,
+        TContext
+      > => {
+      return useMutation(getArchiveCourseMutationOptions(options), queryClient);
+    }
     export type createTaskResponse201 = {
   data: TeacherTaskResponse
   status: 201

@@ -147,3 +147,12 @@ class CourseService:
         )
         await self._transaction.commit()
         return course
+
+    async def archive(self, *, author_id: UUID, course_id: UUID) -> CourseView:
+        """Retire a course without removing learner-accessible content or progress."""
+        await self.teacher_course(author_id=author_id, course_id=course_id)
+        course = await self._courses.update_course(
+            course_id, status=CourseStatus.ARCHIVED.value
+        )
+        await self._transaction.commit()
+        return course

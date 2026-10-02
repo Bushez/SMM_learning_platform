@@ -94,6 +94,8 @@ Teachers create `DRAFT` courses through `/api/v1/teacher/courses`. Only `PUBLISH
 returned by `/api/v1/courses`; draft content is never exposed through learner endpoints. Publishing
 is server-side validated and currently requires at least one module, lesson, and task. Course,
 module, lesson, task, option, and accepted-answer schema is introduced through Alembic migrations.
+`POST /api/v1/teacher/courses/{course_id}/archive` retires a course without deleting its content or
+learner progress: new enrollments stop, while already enrolled learners can finish it.
 
 ## Teacher media uploads
 
