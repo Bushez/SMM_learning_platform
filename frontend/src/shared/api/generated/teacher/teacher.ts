@@ -35,6 +35,7 @@ import type {
   ModuleResponse,
   MultipleChoiceTaskRequest,
   SingleChoiceTaskRequest,
+  TeacherCourseOutlineResponse,
   TeacherTaskResponse,
   TextInputTaskRequest,
   UpdateCourseRequest
@@ -385,7 +386,126 @@ export const useUpdateCourse = <TError = HTTPValidationError,
       > => {
       return useMutation(getUpdateCourseMutationOptions(options), queryClient);
     }
-    export type createCourseModuleResponse201 = {
+    export type getTeacherCourseOutlineResponse200 = {
+  data: TeacherCourseOutlineResponse
+  status: 200
+}
+
+export type getTeacherCourseOutlineResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type getTeacherCourseOutlineResponseSuccess = (getTeacherCourseOutlineResponse200) & {
+  headers: Headers;
+};
+export type getTeacherCourseOutlineResponseError = (getTeacherCourseOutlineResponse422) & {
+  headers: Headers;
+};
+
+export type getTeacherCourseOutlineResponse = (getTeacherCourseOutlineResponseSuccess | getTeacherCourseOutlineResponseError)
+
+export const getGetTeacherCourseOutlineUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/${courseId}/outline`
+}
+
+/**
+ * @summary Get own course outline for the builder
+ */
+export const getTeacherCourseOutline = async (courseId: string, options?: Parameters<typeof apiFetch>[1]): Promise<getTeacherCourseOutlineResponse> => {
+
+  return apiFetch<getTeacherCourseOutlineResponse>(getGetTeacherCourseOutlineUrl(courseId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTeacherCourseOutlineQueryKey = (courseId: string,) => {
+    return [
+    `/api/v1/teacher/courses/${courseId}/outline`
+    ] as const;
+    }
+
+
+export const getGetTeacherCourseOutlineQueryOptions = <TData = Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError = HTTPValidationError>(courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTeacherCourseOutlineQueryKey(courseId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTeacherCourseOutline>>> = ({ signal }) => getTeacherCourseOutline(courseId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: courseId !== null && courseId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTeacherCourseOutlineQueryResult = NonNullable<Awaited<ReturnType<typeof getTeacherCourseOutline>>>
+export type GetTeacherCourseOutlineQueryError = HTTPValidationError
+
+
+export function useGetTeacherCourseOutline<TData = Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError = HTTPValidationError>(
+ courseId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeacherCourseOutline>>,
+          TError,
+          Awaited<ReturnType<typeof getTeacherCourseOutline>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTeacherCourseOutline<TData = Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTeacherCourseOutline>>,
+          TError,
+          Awaited<ReturnType<typeof getTeacherCourseOutline>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTeacherCourseOutline<TData = Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get own course outline for the builder
+ */
+
+export function useGetTeacherCourseOutline<TData = Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTeacherCourseOutline>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTeacherCourseOutlineQueryOptions(courseId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type createCourseModuleResponse201 = {
   data: ModuleResponse
   status: 201
 }
@@ -882,6 +1002,125 @@ export function useGetTeacherTask<TData = Awaited<ReturnType<typeof getTeacherTa
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetTeacherTaskQueryOptions(taskId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type listTeacherCourseTasksResponse200 = {
+  data: TeacherTaskResponse[]
+  status: 200
+}
+
+export type listTeacherCourseTasksResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type listTeacherCourseTasksResponseSuccess = (listTeacherCourseTasksResponse200) & {
+  headers: Headers;
+};
+export type listTeacherCourseTasksResponseError = (listTeacherCourseTasksResponse422) & {
+  headers: Headers;
+};
+
+export type listTeacherCourseTasksResponse = (listTeacherCourseTasksResponseSuccess | listTeacherCourseTasksResponseError)
+
+export const getListTeacherCourseTasksUrl = (courseId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/${courseId}/tasks`
+}
+
+/**
+ * @summary List tasks for an owned course builder outline
+ */
+export const listTeacherCourseTasks = async (courseId: string, options?: Parameters<typeof apiFetch>[1]): Promise<listTeacherCourseTasksResponse> => {
+
+  return apiFetch<listTeacherCourseTasksResponse>(getListTeacherCourseTasksUrl(courseId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTeacherCourseTasksQueryKey = (courseId: string,) => {
+    return [
+    `/api/v1/teacher/courses/${courseId}/tasks`
+    ] as const;
+    }
+
+
+export const getListTeacherCourseTasksQueryOptions = <TData = Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError = HTTPValidationError>(courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTeacherCourseTasksQueryKey(courseId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTeacherCourseTasks>>> = ({ signal }) => listTeacherCourseTasks(courseId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: courseId !== null && courseId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListTeacherCourseTasksQueryResult = NonNullable<Awaited<ReturnType<typeof listTeacherCourseTasks>>>
+export type ListTeacherCourseTasksQueryError = HTTPValidationError
+
+
+export function useListTeacherCourseTasks<TData = Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError = HTTPValidationError>(
+ courseId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTeacherCourseTasks>>,
+          TError,
+          Awaited<ReturnType<typeof listTeacherCourseTasks>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeacherCourseTasks<TData = Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTeacherCourseTasks>>,
+          TError,
+          Awaited<ReturnType<typeof listTeacherCourseTasks>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListTeacherCourseTasks<TData = Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List tasks for an owned course builder outline
+ */
+
+export function useListTeacherCourseTasks<TData = Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError = HTTPValidationError>(
+ courseId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTeacherCourseTasks>>, TError, TData>>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListTeacherCourseTasksQueryOptions(courseId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

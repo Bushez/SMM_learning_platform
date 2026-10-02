@@ -33,3 +33,10 @@ class LessonView:
     title: str
     description: str | None
     position: int
+
+
+@dataclass(frozen=True, slots=True)
+class TeacherCourseOutlineView:
+    course: CourseView
+    modules: tuple[ModuleView, ...]
+    lessons: tuple[LessonView, ...]

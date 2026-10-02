@@ -126,6 +126,15 @@ class SqlAlchemyCourseRepository:
         await self._session.flush()
         return _lesson_view(model)
 
+    async def list_lessons(self, course_id: UUID) -> list[LessonView]:
+        result = await self._session.scalars(
+            select(LessonModel)
+            .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
+            .where(CourseModuleModel.course_id == course_id)
+            .order_by(CourseModuleModel.position, LessonModel.position)
+        )
+        return [_lesson_view(model) for model in result]
+
     async def publish_issues(self, course_id: UUID) -> list[str]:
         modules = await self._session.scalar(
             select(CourseModuleModel.id).where(CourseModuleModel.course_id == course_id).limit(1)

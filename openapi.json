@@ -465,6 +465,54 @@
         }
       }
     },
+    "/api/v1/teacher/courses/{course_id}/outline": {
+      "get": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Get own course outline for the builder",
+        "operationId": "getTeacherCourseOutline",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Course Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherCourseOutlineResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/teacher/courses/{course_id}/modules": {
       "post": {
         "tags": [
@@ -1095,6 +1143,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TeacherTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teacher/courses/{course_id}/tasks": {
+      "get": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "List tasks for an owned course builder outline",
+        "operationId": "listTeacherCourseTasks",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Course Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TeacherTaskResponse"
+                  },
+                  "title": "Response Listteachercoursetasks"
                 }
               }
             }
@@ -2391,6 +2491,34 @@
           "TEXT_INPUT"
         ],
         "title": "TaskType"
+      },
+      "TeacherCourseOutlineResponse": {
+        "properties": {
+          "course": {
+            "$ref": "#/components/schemas/CourseResponse"
+          },
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/ModuleResponse"
+            },
+            "type": "array",
+            "title": "Modules"
+          },
+          "lessons": {
+            "items": {
+              "$ref": "#/components/schemas/LessonResponse"
+            },
+            "type": "array",
+            "title": "Lessons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "course",
+          "modules",
+          "lessons"
+        ],
+        "title": "TeacherCourseOutlineResponse"
       },
       "TeacherTaskOptionResponse": {
         "properties": {

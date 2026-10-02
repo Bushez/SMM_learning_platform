@@ -44,6 +44,7 @@ export * from './role';
 export * from './singleChoiceTaskRequest';
 export * from './taskOptionRequest';
 export * from './taskType';
+export * from './teacherCourseOutlineResponse';
 export * from './teacherTaskOptionResponse';
 export * from './teacherTaskResponse';
 export * from './textAttemptRequest';

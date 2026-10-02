@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.application.auth.dto import UserView
+from app.application.courses import CourseService
 from app.application.tasks import TaskService
 from app.application.tasks.dto import (
     AttemptFeedback,
@@ -15,6 +16,7 @@ from app.application.tasks.dto import (
 )
 from app.domain.courses import TaskType
 from app.presentation.api.dependencies import (
+    get_course_service,
     get_task_service,
     require_authenticated_user,
     require_teacher,
@@ -238,6 +240,25 @@ async def get_teacher_task(
     return TeacherTaskResponse.from_view(
         await service.teacher_task(author_id=teacher.id, task_id=task_id)
     )
+
+
+@teacher_router.get(
+    "/courses/{course_id}/tasks",
+    response_model=list[TeacherTaskResponse],
+    summary="List tasks for an owned course builder outline",
+    operation_id="listTeacherCourseTasks",
+)
+async def list_teacher_course_tasks(
+    course_id: UUID,
+    teacher: UserView = Depends(require_teacher),
+    courses: CourseService = Depends(get_course_service),
+    service: TaskService = Depends(get_task_service),
+) -> list[TeacherTaskResponse]:
+    await courses.teacher_course(author_id=teacher.id, course_id=course_id)
+    return [
+        TeacherTaskResponse.from_view(task)
+        for task in await service.teacher_course_tasks(author_id=teacher.id, course_id=course_id)
+    ]
 
 
 @learning_router.get(

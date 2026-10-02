@@ -5,7 +5,7 @@ from app.application.common.errors import AuthorizationError, NotFoundError, Val
 from app.application.media.ports import MediaRepository
 from app.domain.courses import CourseStatus
 
-from .dto import CourseView, LessonView, ModuleView
+from .dto import CourseView, LessonView, ModuleView, TeacherCourseOutlineView
 from .ports import CourseRepository, CourseTransaction
 
 
@@ -68,6 +68,18 @@ class CourseService:
         if course.author_id != author_id:
             raise AuthorizationError("You do not own this course")
         return course
+
+    async def teacher_outline(
+        self, *, author_id: UUID, course_id: UUID
+    ) -> TeacherCourseOutlineView:
+        course = await self.teacher_course(author_id=author_id, course_id=course_id)
+        modules = await self._courses.list_modules(course_id)
+        lessons = await self._courses.list_lessons(course_id)
+        return TeacherCourseOutlineView(
+            course=course,
+            modules=tuple(modules),
+            lessons=tuple(lessons),
+        )
 
     async def update_course(
         self, *, author_id: UUID, course_id: UUID, **changes: object

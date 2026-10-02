@@ -122,6 +122,19 @@ class SqlAlchemyTaskRepository:
             accepted_answers=tuple(answers),
         )
 
+    async def list_teacher_tasks(self, course_id: UUID) -> list[TeacherTaskView]:
+        task_ids = list(
+            await self._session.scalars(
+                select(TaskModel.id)
+                .join(LessonModel, TaskModel.lesson_id == LessonModel.id)
+                .join(CourseModuleModel, LessonModel.module_id == CourseModuleModel.id)
+                .where(CourseModuleModel.course_id == course_id)
+                .order_by(CourseModuleModel.position, LessonModel.position, TaskModel.position)
+            )
+        )
+        tasks = [await self.get_teacher_task(task_id) for task_id in task_ids]
+        return [task for task in tasks if task is not None]
+
     async def list_learner_tasks(self, lesson_id: UUID) -> list[LearnerTaskView] | None:
         lesson = await self._session.scalar(
             select(LessonModel.id)

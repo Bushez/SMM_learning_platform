@@ -74,6 +74,16 @@ class TaskService:
             raise AuthorizationError("You do not own this task")
         return task
 
+    async def teacher_course_tasks(
+        self, *, author_id: UUID, course_id: UUID
+    ) -> list[TeacherTaskView]:
+        tasks = await self._tasks.list_teacher_tasks(course_id)
+        if tasks and not await self._tasks.lesson_is_owned_by(
+            lesson_id=tasks[0].lesson_id, author_id=author_id
+        ):
+            raise AuthorizationError("You do not own this course")
+        return tasks
+
     async def learner_tasks(self, *, user_id: UUID, lesson_id: UUID) -> list[LearnerTaskView]:
         await self._ensure_lesson_access(user_id=user_id, lesson_id=lesson_id)
         tasks = await self._tasks.list_learner_tasks(lesson_id)

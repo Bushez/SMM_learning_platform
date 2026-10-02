@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.application.auth.dto import UserView
 from app.application.courses import CourseService
-from app.application.courses.dto import CourseView, LessonView, ModuleView
+from app.application.courses.dto import CourseView, LessonView, ModuleView, TeacherCourseOutlineView
 from app.domain.courses import CourseStatus
 from app.presentation.api.dependencies import (
     get_course_service,
@@ -113,6 +113,20 @@ class LessonResponse(BaseModel):
         )
 
 
+class TeacherCourseOutlineResponse(BaseModel):
+    course: CourseResponse
+    modules: list[ModuleResponse]
+    lessons: list[LessonResponse]
+
+    @classmethod
+    def from_view(cls, outline: TeacherCourseOutlineView) -> "TeacherCourseOutlineResponse":
+        return cls(
+            course=CourseResponse.from_view(outline.course),
+            modules=[ModuleResponse.from_view(module) for module in outline.modules],
+            lessons=[LessonResponse.from_view(lesson) for lesson in outline.lessons],
+        )
+
+
 @catalog_router.get(
     "",
     response_model=list[CourseResponse],
@@ -193,6 +207,22 @@ async def update_course(
             course_id=course_id,
             **payload.model_dump(exclude_none=True),
         )
+    )
+
+
+@teacher_router.get(
+    "/{course_id}/outline",
+    response_model=TeacherCourseOutlineResponse,
+    summary="Get own course outline for the builder",
+    operation_id="getTeacherCourseOutline",
+)
+async def get_teacher_course_outline(
+    course_id: UUID,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> TeacherCourseOutlineResponse:
+    return TeacherCourseOutlineResponse.from_view(
+        await service.teacher_outline(author_id=teacher.id, course_id=course_id)
     )
 
 
