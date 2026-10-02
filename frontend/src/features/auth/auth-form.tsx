@@ -10,6 +10,7 @@ import messages from "../../../messages/ru.json";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ApiError, apiFetch } from "@/shared/api/http-client";
+import { siteConfig } from "@/shared/config/site";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -69,7 +70,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <main className="grid min-h-screen place-items-center px-5 py-10">
       <section className="w-full max-w-md rounded-[2rem] border border-border bg-surface p-6 shadow-2xl sm:p-8">
-        <Link className="eyebrow" href="/">{`← ${messages.home.course}`}</Link>
+        <Link className="eyebrow" href="/">{`← ${siteConfig.name}`}</Link>
         <h1 className="mt-6 text-3xl font-black tracking-tight">{title}</h1>
         <p className="mt-2 text-muted-foreground">{description}</p>
         <form className="mt-8 grid gap-5" onSubmit={form.handleSubmit(submit)}>

@@ -85,3 +85,25 @@ export async function apiFetch<T>(
 
   return (await response.json()) as T;
 }
+
+export async function apiFetchBlob(path: string, retryAfterRefresh = true): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
+    headers: {
+      Accept: "image/*",
+      ...(accessToken === null ? {} : { Authorization: `Bearer ${accessToken}` }),
+    },
+  });
+  if (response.status === 401 && retryAfterRefresh) {
+    try {
+      await refreshAccessToken();
+      return apiFetchBlob(path, false);
+    } catch {
+      setAccessToken(null);
+    }
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status, "media_download_failed", "Unable to download media");
+  }
+  return response.blob();
+}
