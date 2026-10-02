@@ -9,6 +9,7 @@ from app.application.auth import AuthService
 from app.application.auth.dto import UserView
 from app.application.common.errors import AuthenticationError, AuthorizationError
 from app.application.courses import CourseService
+from app.application.gamification import GamificationService
 from app.application.learning import LearningService
 from app.application.media import MediaService
 from app.application.tasks import TaskService
@@ -16,6 +17,7 @@ from app.domain.users import Role
 from app.infrastructure.config import Settings
 from app.infrastructure.persistence.sqlalchemy.repositories import (
     SqlAlchemyCourseRepository,
+    SqlAlchemyGamificationRepository,
     SqlAlchemyLearningRepository,
     SqlAlchemyMediaRepository,
     SqlAlchemyRefreshSessionRepository,
@@ -89,12 +91,29 @@ def get_media_service(
     )
 
 
-def get_task_service(session: AsyncSession = Depends(get_db_session)) -> TaskService:
+def get_task_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> TaskService:
+    settings: Settings = request.app.state.settings
     return TaskService(
         tasks=SqlAlchemyTaskRepository(session),
         media=SqlAlchemyMediaRepository(session),
         learning=SqlAlchemyLearningRepository(session),
+        gamification=GamificationService(
+            gamification=SqlAlchemyGamificationRepository(session),
+            task_completion_xp=settings.task_completion_xp,
+        ),
         transaction=SqlAlchemyTransaction(session),
+    )
+
+
+def get_gamification_service(
+    request: Request, session: AsyncSession = Depends(get_db_session)
+) -> GamificationService:
+    settings: Settings = request.app.state.settings
+    return GamificationService(
+        gamification=SqlAlchemyGamificationRepository(session),
+        task_completion_xp=settings.task_completion_xp,
     )
 
 

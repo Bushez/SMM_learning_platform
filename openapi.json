@@ -865,6 +865,128 @@
         }
       }
     },
+    "/api/v1/leaderboards": {
+      "get": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Get XP leaderboard using UTC period boundaries",
+        "operationId": "getLeaderboard",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/LeaderboardPeriod",
+              "default": "WEEKLY"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/LeaderboardScope",
+              "default": "GLOBAL"
+            }
+          },
+          {
+            "name": "course_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Course Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/gamification": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get current user's XP and streak summary",
+        "operationId": "getMyGamificationSummary",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamificationSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/teacher/lessons/{lesson_id}/tasks": {
       "post": {
         "tags": [
@@ -1176,6 +1298,32 @@
               }
             ],
             "title": "Course Progress Percent"
+          },
+          "xp_awarded": {
+            "type": "integer",
+            "title": "Xp Awarded"
+          },
+          "current_streak": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Streak"
+          },
+          "longest_streak": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Streak"
           }
         },
         "type": "object",
@@ -1190,7 +1338,10 @@
           "lesson_completed",
           "module_completed",
           "course_completed",
-          "course_progress_percent"
+          "course_progress_percent",
+          "xp_awarded",
+          "current_streak",
+          "longest_streak"
         ],
         "title": "AttemptFeedbackResponse"
       },
@@ -1483,6 +1634,29 @@
         ],
         "title": "CreateModuleRequest"
       },
+      "GamificationSummaryResponse": {
+        "properties": {
+          "total_xp": {
+            "type": "integer",
+            "title": "Total Xp"
+          },
+          "current_streak": {
+            "type": "integer",
+            "title": "Current Streak"
+          },
+          "longest_streak": {
+            "type": "integer",
+            "title": "Longest Streak"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_xp",
+          "current_streak",
+          "longest_streak"
+        ],
+        "title": "GamificationSummaryResponse"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1507,6 +1681,101 @@
         },
         "type": "object",
         "title": "HealthResponse"
+      },
+      "LeaderboardEntryResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "xp": {
+            "type": "integer",
+            "title": "Xp"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name",
+          "xp",
+          "rank"
+        ],
+        "title": "LeaderboardEntryResponse"
+      },
+      "LeaderboardPeriod": {
+        "type": "string",
+        "enum": [
+          "DAILY",
+          "WEEKLY",
+          "MONTHLY",
+          "ALL_TIME"
+        ],
+        "title": "LeaderboardPeriod"
+      },
+      "LeaderboardResponse": {
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/LeaderboardPeriod"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/LeaderboardScope"
+          },
+          "course_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Id"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardEntryResponse"
+            },
+            "type": "array",
+            "title": "Entries"
+          },
+          "current_user": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LeaderboardEntryResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "scope",
+          "course_id",
+          "entries",
+          "current_user"
+        ],
+        "title": "LeaderboardResponse"
+      },
+      "LeaderboardScope": {
+        "type": "string",
+        "enum": [
+          "GLOBAL",
+          "COURSE"
+        ],
+        "title": "LeaderboardScope"
       },
       "LearnerTaskOptionResponse": {
         "properties": {

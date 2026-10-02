@@ -73,3 +73,6 @@ class AttemptFeedback:
     module_completed: bool = False
     course_completed: bool = False
     course_progress_percent: int | None = None
+    xp_awarded: int = 0
+    current_streak: int | None = None
+    longest_streak: int | None = None

@@ -3,7 +3,7 @@ from dataclasses import replace
 from uuid import UUID
 
 from app.application.common.errors import AuthorizationError, NotFoundError, ValidationError
-from app.application.learning.dto import CompletionUpdate
+from app.application.gamification import GamificationService
 from app.application.learning.ports import LearningRepository
 from app.application.media.ports import MediaRepository
 from app.domain.courses import TaskType
@@ -20,11 +20,13 @@ class TaskService:
         tasks: TaskRepository,
         media: MediaRepository,
         learning: LearningRepository,
+        gamification: GamificationService,
         transaction: TaskTransaction,
     ) -> None:
         self._tasks = tasks
         self._media = media
         self._learning = learning
+        self._gamification = gamification
         self._transaction = transaction
 
     async def create_task(
@@ -80,7 +82,7 @@ class TaskService:
         return tasks
 
     async def submit_choice_attempt(
-        self, *, user_id: UUID, task_id: UUID, selected_option_ids: list[UUID]
+        self, *, user_id: UUID, user_timezone: str, task_id: UUID, selected_option_ids: list[UUID]
     ) -> AttemptFeedback:
         task = await self._evaluation_task(task_id)
         await self._ensure_lesson_access(user_id=user_id, lesson_id=task.lesson_id)
@@ -103,15 +105,17 @@ class TaskService:
             correct=correct,
         )
         if correct:
-            attempt = self._with_completion(
-                attempt,
-                await self._learning.record_task_completion(user_id=user_id, task_id=task.id),
+            attempt = await self._apply_completion(
+                attempt=attempt,
+                user_id=user_id,
+                user_timezone=user_timezone,
+                task_id=task.id,
             )
         await self._transaction.commit()
         return attempt
 
     async def submit_text_attempt(
-        self, *, user_id: UUID, task_id: UUID, answer_text: str
+        self, *, user_id: UUID, user_timezone: str, task_id: UUID, answer_text: str
     ) -> AttemptFeedback:
         task = await self._evaluation_task(task_id)
         await self._ensure_lesson_access(user_id=user_id, lesson_id=task.lesson_id)
@@ -126,9 +130,11 @@ class TaskService:
             correct=correct,
         )
         if correct:
-            attempt = self._with_completion(
-                attempt,
-                await self._learning.record_task_completion(user_id=user_id, task_id=task.id),
+            attempt = await self._apply_completion(
+                attempt=attempt,
+                user_id=user_id,
+                user_timezone=user_timezone,
+                task_id=task.id,
             )
         await self._transaction.commit()
         return attempt
@@ -149,8 +155,24 @@ class TaskService:
 
             raise ConflictError(str(error)) from error
 
-    @staticmethod
-    def _with_completion(attempt: AttemptFeedback, completion: CompletionUpdate) -> AttemptFeedback:
+    async def _apply_completion(
+        self,
+        *,
+        attempt: AttemptFeedback,
+        user_id: UUID,
+        user_timezone: str,
+        task_id: UUID,
+    ) -> AttemptFeedback:
+        completion = await self._learning.record_task_completion(user_id=user_id, task_id=task_id)
+        outcome = None
+        if completion.first_task_completion:
+            outcome = await self._gamification.on_first_task_completion(
+                user_id=user_id,
+                task_id=task_id,
+                course_id=completion.course_id,
+                timezone_name=user_timezone,
+                lesson_completed=completion.lesson_completed,
+            )
         return replace(
             attempt,
             first_task_completion=completion.first_task_completion,
@@ -159,6 +181,9 @@ class TaskService:
             module_completed=completion.module_completed,
             course_completed=completion.course_completed,
             course_progress_percent=completion.course_progress_percent,
+            xp_awarded=outcome.xp_awarded if outcome else 0,
+            current_streak=outcome.current_streak if outcome else None,
+            longest_streak=outcome.longest_streak if outcome else None,
         )
 
     async def _validate_media_ownership(

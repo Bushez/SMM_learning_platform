@@ -181,6 +181,9 @@ class AttemptFeedbackResponse(BaseModel):
     module_completed: bool
     course_completed: bool
     course_progress_percent: int | None
+    xp_awarded: int
+    current_streak: int | None
+    longest_streak: int | None
 
     @classmethod
     def from_view(cls, feedback: AttemptFeedback) -> "AttemptFeedbackResponse":
@@ -196,6 +199,9 @@ class AttemptFeedbackResponse(BaseModel):
             module_completed=feedback.module_completed,
             course_completed=feedback.course_completed,
             course_progress_percent=feedback.course_progress_percent,
+            xp_awarded=feedback.xp_awarded,
+            current_streak=feedback.current_streak,
+            longest_streak=feedback.longest_streak,
         )
 
 
@@ -266,11 +272,15 @@ async def submit_task_attempt(
 ) -> AttemptFeedbackResponse:
     if isinstance(payload, TextAttemptRequest):
         feedback = await service.submit_text_attempt(
-            user_id=user.id, task_id=task_id, answer_text=payload.answer_text
+            user_id=user.id,
+            user_timezone=user.timezone,
+            task_id=task_id,
+            answer_text=payload.answer_text,
         )
     else:
         feedback = await service.submit_choice_attempt(
             user_id=user.id,
+            user_timezone=user.timezone,
             task_id=task_id,
             selected_option_ids=payload.selected_option_ids,
         )

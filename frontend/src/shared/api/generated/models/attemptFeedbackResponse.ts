@@ -18,4 +18,7 @@ export interface AttemptFeedbackResponse {
   module_completed: boolean;
   course_completed: boolean;
   course_progress_percent: number | null;
+  xp_awarded: number;
+  current_streak: number | null;
+  longest_streak: number | null;
 }

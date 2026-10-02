@@ -9,6 +9,7 @@ from .courses import (
     TaskOptionModel,
     UserTaskProgressModel,
 )
+from .gamification import UserDailyActivityModel, XPTransactionModel
 from .media import MediaAssetModel
 from .users import RefreshSessionModel, UserModel
 
@@ -23,6 +24,8 @@ __all__ = [
     "TaskAttemptModel",
     "TaskModel",
     "TaskOptionModel",
+    "UserDailyActivityModel",
     "UserModel",
     "UserTaskProgressModel",
+    "XPTransactionModel",
 ]

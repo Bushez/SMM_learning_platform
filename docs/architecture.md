@@ -87,8 +87,9 @@ as a security invariant.
 
 The task application module owns authoring validation, learner projections, evaluation dispatch, and
 attempt recording. A pure domain evaluator compares choice sets exactly and normalizes text with NFKC,
-whitespace collapse, and case folding. `task_attempts` is append-only history; it intentionally does
-not award XP or mark progress until those phases introduce their own idempotent records.
+whitespace collapse, and case folding. `task_attempts` is append-only history. A correct submission
+creates idempotent progress and, on its first completion, is handed to gamification in the same database
+transaction.
 
 ## Progress, XP, and streak
 

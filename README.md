@@ -110,8 +110,8 @@ Teachers can add lessons and author `SINGLE_CHOICE`, `MULTIPLE_CHOICE`, and `TEX
 Choice options may contain text, image references, or both. `POST /api/v1/learning/lessons/{lesson_id}/tasks`
 returns a learner-safe model that never includes option correctness, accepted text answers, or explanations.
 `POST /api/v1/learning/tasks/{task_id}/attempts` evaluates the answer on the server and persists an
-attempt history record; feedback is returned only after submission. XP and streak are intentionally
-added in the next phase.
+attempt history record; feedback is returned only after submission. The first correct completion of
+a task awards server-configured XP and reports the resulting award in the feedback.
 
 ## Learning progress
 
@@ -120,6 +120,15 @@ aggregate progress or ordered outline from `/progress` and `/outline`. The first
 each subsequent lesson opens only after all prior lessons in the course are complete. Completion uses
 the unique `(user_id, task_id)` `user_task_progress` record, so retried correct answers do not duplicate
 progress. Archived courses cannot be newly enrolled in, while existing enrolled learners may continue.
+
+## Gamification
+
+XP is stored in append-only `xp_transactions`; the database enforces one award per
+`(user_id, source_type, source_id)`. Completing at least one lesson creates one local activity day,
+keyed by the user's IANA timezone, and updates the current/longest streak. `GET
+/api/v1/users/me/gamification` returns the personal summary. `GET /api/v1/leaderboards` supports
+`DAILY`, `WEEKLY`, `MONTHLY`, and `ALL_TIME` periods plus `GLOBAL` and `COURSE` scopes. Leaderboard
+periods use UTC boundaries; PostgreSQL remains the source of truth.
 
 ## Quality commands
 
