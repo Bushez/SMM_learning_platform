@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import cast
 from uuid import UUID
 
 from sqlalchemy import and_, func, select
@@ -22,6 +23,8 @@ from ..models import (
     TaskModel,
     UserTaskProgressModel,
 )
+
+type LessonRow = tuple[UUID, str, int, UUID, str, int, int, int]
 
 
 class SqlAlchemyLearningRepository:
@@ -202,8 +205,8 @@ class SqlAlchemyLearningRepository:
             completed=total_tasks > 0 and completed_tasks == total_tasks,
         )
 
-    async def _lesson_rows(self, *, user_id: UUID, course_id: UUID):
-        return list(
+    async def _lesson_rows(self, *, user_id: UUID, course_id: UUID) -> list[LessonRow]:
+        rows = list(
             await self._session.execute(
                 select(
                     CourseModuleModel.id,
@@ -229,3 +232,4 @@ class SqlAlchemyLearningRepository:
                 .order_by(CourseModuleModel.position, LessonModel.position)
             )
         )
+        return cast(list[LessonRow], rows)

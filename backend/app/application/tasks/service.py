@@ -9,7 +9,7 @@ from app.application.media.ports import MediaRepository
 from app.domain.courses import TaskType
 from app.domain.learning import evaluate_choice, evaluate_text_answer, normalize_text_answer
 
-from .dto import AttemptFeedback, LearnerTaskView, TeacherTaskView
+from .dto import AttemptFeedback, EvaluationTaskView, LearnerTaskView, TeacherTaskView
 from .ports import TaskRepository, TaskTransaction
 
 
@@ -149,7 +149,7 @@ class TaskService:
         await self._transaction.commit()
         return attempt
 
-    async def _evaluation_task(self, task_id: UUID):
+    async def _evaluation_task(self, task_id: UUID) -> EvaluationTaskView:
         task = await self._tasks.get_evaluation_task(task_id)
         if task is None:
             raise NotFoundError("Published task not found")

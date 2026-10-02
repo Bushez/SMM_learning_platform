@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Subquery
 
 from app.application.gamification.dto import LeaderboardEntry, LeaderboardPeriod, LeaderboardScope
 
@@ -125,7 +126,7 @@ class SqlAlchemyGamificationRepository:
         scope: LeaderboardScope,
         course_id: UUID | None,
         start_at: datetime | None,
-    ):
+    ) -> Subquery:
         query = (
             select(
                 XPTransactionModel.user_id.label("user_id"),

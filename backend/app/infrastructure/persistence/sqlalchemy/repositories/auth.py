@@ -39,9 +39,10 @@ class SqlAlchemyUserRepository:
         return None if model is None else _to_domain(model)
 
     async def get_password_hash(self, user_id: UUID) -> str | None:
-        return await self._session.scalar(
+        password_hash = await self._session.scalar(
             select(UserModel.password_hash).where(UserModel.id == user_id)
         )
+        return password_hash
 
     async def add(
         self,
