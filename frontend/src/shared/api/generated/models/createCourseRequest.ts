@@ -13,11 +13,6 @@ export interface CreateCourseRequest {
      */
   title: string;
   /**
-     * @minLength 2
-     * @maxLength 180
-     */
-  slug: string;
-  /**
      * @minLength 1
      * @maxLength 10000
      */

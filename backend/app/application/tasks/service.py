@@ -38,8 +38,8 @@ class TaskService:
         position: int,
         prompt: str,
         prompt_media_id: UUID | None,
-        explanation: str,
-        result_media_id: UUID | None,
+        answer_feedback_text: str | None,
+        answer_feedback_media_id: UUID | None,
         options: list[dict[str, object]],
         accepted_answers: list[str],
     ) -> TeacherTaskView:
@@ -50,7 +50,7 @@ class TaskService:
         )
         await self._validate_media_ownership(
             author_id=author_id,
-            media_ids=self._media_ids(prompt_media_id, result_media_id, options),
+            media_ids=self._media_ids(prompt_media_id, answer_feedback_media_id, options),
         )
         task = await self._tasks.create_task(
             lesson_id=lesson_id,
@@ -58,8 +58,8 @@ class TaskService:
             position=position,
             prompt=prompt.strip(),
             prompt_media_id=prompt_media_id,
-            explanation=explanation.strip(),
-            result_media_id=result_media_id,
+            answer_feedback_text=answer_feedback_text,
+            answer_feedback_media_id=answer_feedback_media_id,
             options=options,
             accepted_answers=[normalize_text_answer(value) for value in accepted_answers],
         )
@@ -83,22 +83,18 @@ class TaskService:
         position: int,
         prompt: str,
         prompt_media_id: UUID | None,
-        explanation: str,
-        result_media_id: UUID | None,
+        answer_feedback_text: str | None,
+        answer_feedback_media_id: UUID | None,
         options: list[dict[str, object]],
         accepted_answers: list[str],
     ) -> TeacherTaskView:
         await self.teacher_task(author_id=author_id, task_id=task_id)
-        if await self._tasks.has_learner_progress(task_id):
-            from app.application.common.errors import ConflictError
-
-            raise ConflictError("Tasks with learner progress cannot be structurally edited")
         self._validate_definition(
             task_type=task_type, options=options, accepted_answers=accepted_answers
         )
         await self._validate_media_ownership(
             author_id=author_id,
-            media_ids=self._media_ids(prompt_media_id, result_media_id, options),
+            media_ids=self._media_ids(prompt_media_id, answer_feedback_media_id, options),
         )
         task = await self._tasks.replace_task(
             task_id=task_id,
@@ -106,8 +102,8 @@ class TaskService:
             position=position,
             prompt=prompt.strip(),
             prompt_media_id=prompt_media_id,
-            explanation=explanation.strip(),
-            result_media_id=result_media_id,
+            answer_feedback_text=answer_feedback_text,
+            answer_feedback_media_id=answer_feedback_media_id,
             options=options,
             accepted_answers=[normalize_text_answer(value) for value in accepted_answers],
         )
@@ -123,6 +119,25 @@ class TaskService:
         ):
             raise AuthorizationError("You do not own this course")
         return tasks
+
+    async def delete_task(self, *, author_id: UUID, task_id: UUID) -> None:
+        await self.teacher_task(author_id=author_id, task_id=task_id)
+        if await self._tasks.has_learner_progress(task_id):
+            from app.application.common.errors import ConflictError
+
+            raise ConflictError("Tasks with learner progress cannot be deleted")
+        await self._tasks.delete_task(task_id)
+        await self._transaction.commit()
+
+    async def move_task(self, *, author_id: UUID, task_id: UUID, position: int) -> TeacherTaskView:
+        await self.teacher_task(author_id=author_id, task_id=task_id)
+        if await self._tasks.has_learner_progress(task_id):
+            from app.application.common.errors import ConflictError
+
+            raise ConflictError("Tasks with learner progress cannot be reordered")
+        task = await self._tasks.move_task(task_id, position)
+        await self._transaction.commit()
+        return task
 
     async def learner_tasks(self, *, user_id: UUID, lesson_id: UUID) -> list[LearnerTaskView]:
         await self._ensure_lesson_access(user_id=user_id, lesson_id=lesson_id)
@@ -245,12 +260,19 @@ class TaskService:
 
     @staticmethod
     def _media_ids(
-        prompt_media_id: UUID | None, result_media_id: UUID | None, options: list[dict[str, object]]
+        prompt_media_id: UUID | None,
+        answer_feedback_media_id: UUID | None,
+        options: list[dict[str, object]],
     ) -> tuple[UUID, ...]:
-        option_media_ids = [value for option in options if (value := option.get("media_id"))]
+        option_media_ids = [
+            value
+            for option in options
+            for key in ("media_id", "feedback_media_id")
+            if (value := option.get(key))
+        ]
         return tuple(
             media_id
-            for media_id in [prompt_media_id, result_media_id, *option_media_ids]
+            for media_id in [prompt_media_id, answer_feedback_media_id, *option_media_ids]
             if isinstance(media_id, UUID)
         )
 

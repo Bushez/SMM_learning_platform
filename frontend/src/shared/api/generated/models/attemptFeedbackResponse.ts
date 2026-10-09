@@ -5,13 +5,14 @@
  * Backend API for courses, learning progress, and gamification.
  * OpenAPI spec version: 0.1.0
  */
+import type { OptionFeedbackResponse } from './optionFeedbackResponse';
 
 export interface AttemptFeedbackResponse {
   attempt_id: string;
   correct: boolean;
-  explanation: string;
-  result_media_id: string | null;
   correct_option_ids: string[];
+  option_feedback: OptionFeedbackResponse[];
+  answer_feedback: OptionFeedbackResponse | null;
   first_task_completion: boolean;
   task_completed: boolean;
   lesson_completed: boolean;

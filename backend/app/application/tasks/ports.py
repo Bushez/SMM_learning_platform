@@ -15,8 +15,8 @@ class TaskRepository(Protocol):
         position: int,
         prompt: str,
         prompt_media_id: UUID | None,
-        explanation: str,
-        result_media_id: UUID | None,
+        answer_feedback_text: str | None,
+        answer_feedback_media_id: UUID | None,
         options: list[dict[str, object]],
         accepted_answers: list[str],
     ) -> TeacherTaskView: ...
@@ -33,11 +33,15 @@ class TaskRepository(Protocol):
         position: int,
         prompt: str,
         prompt_media_id: UUID | None,
-        explanation: str,
-        result_media_id: UUID | None,
+        answer_feedback_text: str | None,
+        answer_feedback_media_id: UUID | None,
         options: list[dict[str, object]],
         accepted_answers: list[str],
     ) -> TeacherTaskView: ...
+
+    async def delete_task(self, task_id: UUID) -> None: ...
+
+    async def move_task(self, task_id: UUID, position: int) -> TeacherTaskView: ...
 
     async def list_teacher_tasks(self, course_id: UUID) -> list[TeacherTaskView]: ...
 

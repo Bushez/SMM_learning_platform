@@ -12,6 +12,8 @@ class TaskOptionEditorView:
     media_id: UUID | None
     position: int
     is_correct: bool
+    feedback_text: str | None
+    feedback_media_id: UUID | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,8 +24,8 @@ class TeacherTaskView:
     position: int
     prompt: str
     prompt_media_id: UUID | None
-    explanation: str
-    result_media_id: UUID | None
+    answer_feedback_text: str | None
+    answer_feedback_media_id: UUID | None
     options: tuple[TaskOptionEditorView, ...]
     accepted_answers: tuple[str, ...]
 
@@ -52,21 +54,28 @@ class EvaluationTaskView:
     id: UUID
     lesson_id: UUID
     task_type: TaskType
-    explanation: str
-    result_media_id: UUID | None
     option_ids: tuple[UUID, ...]
     correct_option_ids: tuple[UUID, ...]
     accepted_answers: tuple[str, ...]
+    option_feedback: tuple["OptionFeedback", ...]
+    answer_feedback: "OptionFeedback | None"
+
+
+@dataclass(frozen=True, slots=True)
+class OptionFeedback:
+    option_id: UUID
+    text: str | None
+    media_id: UUID | None
 
 
 @dataclass(frozen=True, slots=True)
 class AttemptFeedback:
     attempt_id: UUID
     correct: bool
-    explanation: str
-    result_media_id: UUID | None
     correct_option_ids: tuple[UUID, ...]
     created_at: datetime
+    option_feedback: tuple[OptionFeedback, ...] = ()
+    answer_feedback: OptionFeedback | None = None
     first_task_completion: bool = False
     task_completed: bool = False
     lesson_completed: bool = False

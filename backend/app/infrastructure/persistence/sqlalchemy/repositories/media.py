@@ -100,8 +100,9 @@ class SqlAlchemyMediaRepository:
                 CourseModel.status.in_(published_statuses),
                 or_(
                     TaskModel.prompt_media_id == media_id,
-                    TaskModel.result_media_id == media_id,
+                    TaskModel.answer_feedback_media_id == media_id,
                     TaskOptionModel.media_id == media_id,
+                    TaskOptionModel.feedback_media_id == media_id,
                 ),
             )
         )

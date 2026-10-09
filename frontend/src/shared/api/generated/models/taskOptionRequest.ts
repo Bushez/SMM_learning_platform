@@ -12,4 +12,6 @@ export interface TaskOptionRequest {
   /** @minimum 1 */
   position: number;
   is_correct: boolean;
+  feedback_text?: string | null;
+  feedback_media_id?: string | null;
 }

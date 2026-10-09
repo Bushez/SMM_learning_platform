@@ -44,7 +44,6 @@ class CreateCourseRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     title: str = Field(min_length=2, max_length=160)
-    slug: str = Field(min_length=2, max_length=180)
     description: str = Field(min_length=1, max_length=10_000)
     category: str = Field(min_length=2, max_length=80)
     language_code: str = Field(default="ru", min_length=2, max_length=16)
@@ -66,6 +65,16 @@ class CreateModuleRequest(BaseModel):
 
     title: str = Field(min_length=2, max_length=160)
     description: str | None = Field(default=None, max_length=10_000)
+    position: int = Field(ge=1)
+
+
+class UpdateModuleRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    title: str = Field(min_length=2, max_length=160)
+    description: str | None = Field(default=None, max_length=10_000)
+
+
+class MoveRequest(BaseModel):
     position: int = Field(ge=1)
 
 
@@ -93,6 +102,12 @@ class CreateLessonRequest(BaseModel):
     title: str = Field(min_length=2, max_length=160)
     description: str | None = Field(default=None, max_length=10_000)
     position: int = Field(ge=1)
+
+
+class UpdateLessonRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    title: str = Field(min_length=2, max_length=160)
+    description: str | None = Field(default=None, max_length=10_000)
 
 
 class LessonResponse(BaseModel):
@@ -244,6 +259,58 @@ async def create_module(
     )
 
 
+@teacher_router.patch(
+    "/modules/{module_id}",
+    response_model=ModuleResponse,
+    summary="Update own module",
+    operation_id="updateCourseModule",
+)
+async def update_module(
+    module_id: UUID,
+    payload: UpdateModuleRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> ModuleResponse:
+    return ModuleResponse.from_view(
+        await service.update_module(
+            author_id=teacher.id, module_id=module_id, **payload.model_dump()
+        )
+    )
+
+
+@teacher_router.delete(
+    "/modules/{module_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete own empty-progress module",
+    operation_id="deleteCourseModule",
+)
+async def delete_module(
+    module_id: UUID,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> None:
+    await service.delete_module(author_id=teacher.id, module_id=module_id)
+
+
+@teacher_router.post(
+    "/modules/{module_id}/move",
+    response_model=ModuleResponse,
+    summary="Move own module",
+    operation_id="moveCourseModule",
+)
+async def move_module(
+    module_id: UUID,
+    payload: MoveRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> ModuleResponse:
+    return ModuleResponse.from_view(
+        await service.move_module(
+            author_id=teacher.id, module_id=module_id, position=payload.position
+        )
+    )
+
+
 @teacher_router.post(
     "/modules/{module_id}/lessons",
     response_model=LessonResponse,
@@ -259,6 +326,58 @@ async def create_lesson(
 ) -> LessonResponse:
     return LessonResponse.from_view(
         await service.add_lesson(author_id=teacher.id, module_id=module_id, **payload.model_dump())
+    )
+
+
+@teacher_router.patch(
+    "/lessons/{lesson_id}",
+    response_model=LessonResponse,
+    summary="Update own lesson",
+    operation_id="updateCourseLesson",
+)
+async def update_lesson(
+    lesson_id: UUID,
+    payload: UpdateLessonRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> LessonResponse:
+    return LessonResponse.from_view(
+        await service.update_lesson(
+            author_id=teacher.id, lesson_id=lesson_id, **payload.model_dump()
+        )
+    )
+
+
+@teacher_router.delete(
+    "/lessons/{lesson_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete own empty-progress lesson",
+    operation_id="deleteCourseLesson",
+)
+async def delete_lesson(
+    lesson_id: UUID,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> None:
+    await service.delete_lesson(author_id=teacher.id, lesson_id=lesson_id)
+
+
+@teacher_router.post(
+    "/lessons/{lesson_id}/move",
+    response_model=LessonResponse,
+    summary="Move own lesson",
+    operation_id="moveCourseLesson",
+)
+async def move_lesson(
+    lesson_id: UUID,
+    payload: MoveRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: CourseService = Depends(get_course_service),
+) -> LessonResponse:
+    return LessonResponse.from_view(
+        await service.move_lesson(
+            author_id=teacher.id, lesson_id=lesson_id, position=payload.position
+        )
     )
 
 

@@ -72,8 +72,8 @@ class TaskModel(Base):
     prompt_media_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("media_assets.id", ondelete="RESTRICT")
     )
-    explanation: Mapped[str] = mapped_column(Text, nullable=False)
-    result_media_id: Mapped[UUID | None] = mapped_column(
+    answer_feedback_text: Mapped[str | None] = mapped_column(Text)
+    answer_feedback_media_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("media_assets.id", ondelete="RESTRICT")
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -92,6 +92,10 @@ class TaskOptionModel(Base):
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     is_correct: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    feedback_text: Mapped[str | None] = mapped_column(Text)
+    feedback_media_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("media_assets.id", ondelete="RESTRICT")
+    )
 
 
 class TaskAcceptedAnswerModel(Base):

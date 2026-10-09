@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import case, func, select
+from sqlalchemy import case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.courses.dto import CourseView, LessonView, ModuleView
@@ -14,6 +14,7 @@ from ..models import (
     TaskAcceptedAnswerModel,
     TaskModel,
     TaskOptionModel,
+    UserTaskProgressModel,
 )
 
 
@@ -103,6 +104,15 @@ class SqlAlchemyCourseRepository:
         return _course_view(model)
 
     async def add_module(self, **kwargs: object) -> ModuleView:
+        course_id = kwargs["course_id"]
+        kwargs["position"] = (
+            await self._session.scalar(
+                select(func.coalesce(func.max(CourseModuleModel.position), 0)).where(
+                    CourseModuleModel.course_id == course_id
+                )
+            )
+            or 0
+        ) + 1
         model = CourseModuleModel(**kwargs)
         self._session.add(model)
         await self._session.flush()
@@ -120,7 +130,65 @@ class SqlAlchemyCourseRepository:
         model = await self._session.get(CourseModuleModel, module_id)
         return None if model is None else _module_view(model)
 
+    async def update_module(self, module_id: UUID, **kwargs: object) -> ModuleView:
+        model = await self._session.get(CourseModuleModel, module_id, with_for_update=True)
+        if model is None:
+            raise RuntimeError("Module was removed during update")
+        for field, value in kwargs.items():
+            setattr(model, field, value)
+        await self._session.flush()
+        return _module_view(model)
+
+    async def delete_module(self, module_id: UUID) -> None:
+        await self._session.execute(
+            delete(CourseModuleModel).where(CourseModuleModel.id == module_id)
+        )
+
+    async def module_has_learner_progress(self, module_id: UUID) -> bool:
+        return (
+            await self._session.scalar(
+                select(UserTaskProgressModel.task_id)
+                .join(TaskModel, UserTaskProgressModel.task_id == TaskModel.id)
+                .join(LessonModel, TaskModel.lesson_id == LessonModel.id)
+                .where(LessonModel.module_id == module_id)
+                .limit(1)
+            )
+            is not None
+        )
+
+    async def move_module(self, module_id: UUID, position: int) -> ModuleView:
+        model = await self._session.get(CourseModuleModel, module_id, with_for_update=True)
+        if model is None:
+            raise RuntimeError("Module was removed during reorder")
+        siblings = list(
+            await self._session.scalars(
+                select(CourseModuleModel)
+                .where(CourseModuleModel.course_id == model.course_id)
+                .order_by(CourseModuleModel.position)
+                .with_for_update()
+            )
+        )
+        ordered = [item for item in siblings if item.id != module_id]
+        target = max(1, min(position, len(siblings)))
+        ordered.insert(target - 1, model)
+        for index, item in enumerate(ordered, start=1):
+            item.position = -index
+        await self._session.flush()
+        for index, item in enumerate(ordered, start=1):
+            item.position = index
+        await self._session.flush()
+        return _module_view(model)
+
     async def add_lesson(self, **kwargs: object) -> LessonView:
+        module_id = kwargs["module_id"]
+        kwargs["position"] = (
+            await self._session.scalar(
+                select(func.coalesce(func.max(LessonModel.position), 0)).where(
+                    LessonModel.module_id == module_id
+                )
+            )
+            or 0
+        ) + 1
         model = LessonModel(**kwargs)
         self._session.add(model)
         await self._session.flush()
@@ -134,6 +202,56 @@ class SqlAlchemyCourseRepository:
             .order_by(CourseModuleModel.position, LessonModel.position)
         )
         return [_lesson_view(model) for model in result]
+
+    async def get_lesson(self, lesson_id: UUID) -> LessonView | None:
+        model = await self._session.get(LessonModel, lesson_id)
+        return None if model is None else _lesson_view(model)
+
+    async def update_lesson(self, lesson_id: UUID, **kwargs: object) -> LessonView:
+        model = await self._session.get(LessonModel, lesson_id, with_for_update=True)
+        if model is None:
+            raise RuntimeError("Lesson was removed during update")
+        for field, value in kwargs.items():
+            setattr(model, field, value)
+        await self._session.flush()
+        return _lesson_view(model)
+
+    async def delete_lesson(self, lesson_id: UUID) -> None:
+        await self._session.execute(delete(LessonModel).where(LessonModel.id == lesson_id))
+
+    async def lesson_has_learner_progress(self, lesson_id: UUID) -> bool:
+        return (
+            await self._session.scalar(
+                select(UserTaskProgressModel.task_id)
+                .join(TaskModel, UserTaskProgressModel.task_id == TaskModel.id)
+                .where(TaskModel.lesson_id == lesson_id)
+                .limit(1)
+            )
+            is not None
+        )
+
+    async def move_lesson(self, lesson_id: UUID, position: int) -> LessonView:
+        model = await self._session.get(LessonModel, lesson_id, with_for_update=True)
+        if model is None:
+            raise RuntimeError("Lesson was removed during reorder")
+        siblings = list(
+            await self._session.scalars(
+                select(LessonModel)
+                .where(LessonModel.module_id == model.module_id)
+                .order_by(LessonModel.position)
+                .with_for_update()
+            )
+        )
+        ordered = [item for item in siblings if item.id != lesson_id]
+        target = max(1, min(position, len(siblings)))
+        ordered.insert(target - 1, model)
+        for index, item in enumerate(ordered, start=1):
+            item.position = -index
+        await self._session.flush()
+        for index, item in enumerate(ordered, start=1):
+            item.position = index
+        await self._session.flush()
+        return _lesson_view(model)
 
     async def publish_issues(self, course_id: UUID) -> list[str]:
         modules = await self._session.scalar(

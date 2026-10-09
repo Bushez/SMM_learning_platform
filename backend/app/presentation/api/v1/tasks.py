@@ -11,6 +11,7 @@ from app.application.tasks.dto import (
     AttemptFeedback,
     LearnerTaskOptionView,
     LearnerTaskView,
+    OptionFeedback,
     TaskOptionEditorView,
     TeacherTaskView,
 )
@@ -33,6 +34,8 @@ class TaskOptionRequest(BaseModel):
     media_id: UUID | None = None
     position: int = Field(ge=1)
     is_correct: bool
+    feedback_text: str | None = Field(default=None, max_length=10_000)
+    feedback_media_id: UUID | None = None
 
 
 class TaskBaseRequest(BaseModel):
@@ -41,18 +44,12 @@ class TaskBaseRequest(BaseModel):
     position: int = Field(ge=1)
     prompt: str = Field(min_length=1, max_length=10_000)
     prompt_media_id: UUID | None = None
-    explanation: str = Field(min_length=1, max_length=10_000)
-    result_media_id: UUID | None = None
+    answer_feedback_text: str | None = Field(default=None, max_length=10_000)
+    answer_feedback_media_id: UUID | None = None
 
 
 class SingleChoiceTaskRequest(TaskBaseRequest):
     task_type: Literal[TaskType.SINGLE_CHOICE]
-    options: list[TaskOptionRequest] = Field(min_length=2)
-    accepted_answers: list[str] = Field(default_factory=list)
-
-
-class MultipleChoiceTaskRequest(TaskBaseRequest):
-    task_type: Literal[TaskType.MULTIPLE_CHOICE]
     options: list[TaskOptionRequest] = Field(min_length=2)
     accepted_answers: list[str] = Field(default_factory=list)
 
@@ -64,9 +61,13 @@ class TextInputTaskRequest(TaskBaseRequest):
 
 
 CreateTaskRequest = Annotated[
-    SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest,
+    SingleChoiceTaskRequest | TextInputTaskRequest,
     Field(discriminator="task_type"),
 ]
+
+
+class MoveTaskRequest(BaseModel):
+    position: int = Field(ge=1)
 
 
 class TeacherTaskOptionResponse(BaseModel):
@@ -75,6 +76,8 @@ class TeacherTaskOptionResponse(BaseModel):
     media_id: UUID | None
     position: int
     is_correct: bool
+    feedback_text: str | None
+    feedback_media_id: UUID | None
 
     @classmethod
     def from_view(cls, option: TaskOptionEditorView) -> "TeacherTaskOptionResponse":
@@ -84,6 +87,8 @@ class TeacherTaskOptionResponse(BaseModel):
             media_id=option.media_id,
             position=option.position,
             is_correct=option.is_correct,
+            feedback_text=option.feedback_text,
+            feedback_media_id=option.feedback_media_id,
         )
 
 
@@ -94,8 +99,8 @@ class TeacherTaskResponse(BaseModel):
     position: int
     prompt: str
     prompt_media_id: UUID | None
-    explanation: str
-    result_media_id: UUID | None
+    answer_feedback_text: str | None
+    answer_feedback_media_id: UUID | None
     options: list[TeacherTaskOptionResponse]
     accepted_answers: list[str]
 
@@ -108,8 +113,8 @@ class TeacherTaskResponse(BaseModel):
             position=task.position,
             prompt=task.prompt,
             prompt_media_id=task.prompt_media_id,
-            explanation=task.explanation,
-            result_media_id=task.result_media_id,
+            answer_feedback_text=task.answer_feedback_text,
+            answer_feedback_media_id=task.answer_feedback_media_id,
             options=[TeacherTaskOptionResponse.from_view(option) for option in task.options],
             accepted_answers=list(task.accepted_answers),
         )
@@ -174,9 +179,9 @@ SubmitAttemptRequest = Annotated[
 class AttemptFeedbackResponse(BaseModel):
     attempt_id: UUID
     correct: bool
-    explanation: str
-    result_media_id: UUID | None
     correct_option_ids: list[UUID]
+    option_feedback: list["OptionFeedbackResponse"]
+    answer_feedback: "OptionFeedbackResponse | None"
     first_task_completion: bool
     task_completed: bool
     lesson_completed: bool
@@ -192,9 +197,13 @@ class AttemptFeedbackResponse(BaseModel):
         return cls(
             attempt_id=feedback.attempt_id,
             correct=feedback.correct,
-            explanation=feedback.explanation,
-            result_media_id=feedback.result_media_id,
             correct_option_ids=list(feedback.correct_option_ids),
+            option_feedback=[
+                OptionFeedbackResponse.from_view(item) for item in feedback.option_feedback
+            ],
+            answer_feedback=OptionFeedbackResponse.from_view(feedback.answer_feedback)
+            if feedback.answer_feedback
+            else None,
             first_task_completion=feedback.first_task_completion,
             task_completed=feedback.task_completed,
             lesson_completed=feedback.lesson_completed,
@@ -205,6 +214,16 @@ class AttemptFeedbackResponse(BaseModel):
             current_streak=feedback.current_streak,
             longest_streak=feedback.longest_streak,
         )
+
+
+class OptionFeedbackResponse(BaseModel):
+    option_id: UUID
+    text: str | None
+    media_id: UUID | None
+
+    @classmethod
+    def from_view(cls, feedback: OptionFeedback) -> "OptionFeedbackResponse":
+        return cls(option_id=feedback.option_id, text=feedback.text, media_id=feedback.media_id)
 
 
 @teacher_router.post(
@@ -229,7 +248,7 @@ async def create_task(
 @teacher_router.put(
     "/tasks/{task_id}",
     response_model=TeacherTaskResponse,
-    summary="Replace an owned task that has no learner progress",
+    summary="Replace an owned task while preserving attempt and progress records",
     operation_id="replaceTeacherTask",
 )
 async def replace_task(
@@ -242,6 +261,41 @@ async def replace_task(
     data["options"] = [option.model_dump() for option in payload.options]
     task = await service.replace_task(author_id=teacher.id, task_id=task_id, **data)
     return TeacherTaskResponse.from_view(task)
+
+
+@teacher_router.delete(
+    "/tasks/{task_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete an owned task without learner progress",
+    operation_id="deleteTeacherTask",
+)
+async def delete_task(
+    task_id: UUID,
+    teacher: UserView = Depends(require_teacher),
+    service: TaskService = Depends(get_task_service),
+) -> None:
+    await service.delete_task(author_id=teacher.id, task_id=task_id)
+
+
+@teacher_router.post(
+    "/tasks/{task_id}/move",
+    response_model=TeacherTaskResponse,
+    summary="Move an owned task",
+    operation_id="moveTeacherTask",
+)
+async def move_task(
+    task_id: UUID,
+    payload: MoveTaskRequest,
+    teacher: UserView = Depends(require_teacher),
+    service: TaskService = Depends(get_task_service),
+) -> TeacherTaskResponse:
+    return TeacherTaskResponse.from_view(
+        await service.move_task(
+            author_id=teacher.id,
+            task_id=task_id,
+            position=payload.position,
+        )
+    )
 
 
 @teacher_router.get(

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.tasks.dto import (
@@ -9,6 +9,7 @@ from app.application.tasks.dto import (
     EvaluationTaskView,
     LearnerTaskOptionView,
     LearnerTaskView,
+    OptionFeedback,
     TaskOptionEditorView,
     TeacherTaskView,
 )
@@ -46,19 +47,27 @@ class SqlAlchemyTaskRepository:
         position: int,
         prompt: str,
         prompt_media_id: UUID | None,
-        explanation: str,
-        result_media_id: UUID | None,
+        answer_feedback_text: str | None,
+        answer_feedback_media_id: UUID | None,
         options: list[dict[str, object]],
         accepted_answers: list[str],
     ) -> TeacherTaskView:
+        next_position = (
+            await self._session.scalar(
+                select(func.coalesce(func.max(TaskModel.position), 0)).where(
+                    TaskModel.lesson_id == lesson_id
+                )
+            )
+            or 0
+        ) + 1
         task = TaskModel(
             lesson_id=lesson_id,
             task_type=task_type,
-            position=position,
+            position=next_position,
             prompt=prompt,
             prompt_media_id=prompt_media_id,
-            explanation=explanation,
-            result_media_id=result_media_id,
+            answer_feedback_text=answer_feedback_text,
+            answer_feedback_media_id=answer_feedback_media_id,
         )
         self._session.add(task)
         await self._session.flush()
@@ -69,6 +78,8 @@ class SqlAlchemyTaskRepository:
                 media_id=option.get("media_id"),
                 position=option["position"],
                 is_correct=option["is_correct"],
+                feedback_text=option.get("feedback_text"),
+                feedback_media_id=option.get("feedback_media_id"),
             )
             for option in options
         ]
@@ -85,8 +96,8 @@ class SqlAlchemyTaskRepository:
             position=task.position,
             prompt=task.prompt,
             prompt_media_id=task.prompt_media_id,
-            explanation=task.explanation,
-            result_media_id=task.result_media_id,
+            answer_feedback_text=task.answer_feedback_text,
+            answer_feedback_media_id=task.answer_feedback_media_id,
             options=tuple(_editor_option(option) for option in option_models),
             accepted_answers=tuple(answer.normalized_value for answer in answer_models),
         )
@@ -116,8 +127,8 @@ class SqlAlchemyTaskRepository:
             position=task.position,
             prompt=task.prompt,
             prompt_media_id=task.prompt_media_id,
-            explanation=task.explanation,
-            result_media_id=task.result_media_id,
+            answer_feedback_text=task.answer_feedback_text,
+            answer_feedback_media_id=task.answer_feedback_media_id,
             options=tuple(_editor_option(option) for option in options),
             accepted_answers=tuple(answers),
         )
@@ -125,11 +136,14 @@ class SqlAlchemyTaskRepository:
     async def has_learner_progress(self, task_id: UUID) -> bool:
         from ..models import UserTaskProgressModel
 
-        return await self._session.scalar(
-            select(UserTaskProgressModel.task_id)
-            .where(UserTaskProgressModel.task_id == task_id)
-            .limit(1)
-        ) is not None
+        return (
+            await self._session.scalar(
+                select(UserTaskProgressModel.task_id)
+                .where(UserTaskProgressModel.task_id == task_id)
+                .limit(1)
+            )
+            is not None
+        )
 
     async def replace_task(
         self,
@@ -139,8 +153,8 @@ class SqlAlchemyTaskRepository:
         position: int,
         prompt: str,
         prompt_media_id: UUID | None,
-        explanation: str,
-        result_media_id: UUID | None,
+        answer_feedback_text: str | None,
+        answer_feedback_media_id: UUID | None,
         options: list[dict[str, object]],
         accepted_answers: list[str],
     ) -> TeacherTaskView:
@@ -157,13 +171,10 @@ class SqlAlchemyTaskRepository:
         task.position = position
         task.prompt = prompt
         task.prompt_media_id = prompt_media_id
-        task.explanation = explanation
-        task.result_media_id = result_media_id
+        task.answer_feedback_text = answer_feedback_text
+        task.answer_feedback_media_id = answer_feedback_media_id
         self._session.add_all(
-            [
-                TaskOptionModel(task_id=task_id, **option)
-                for option in options
-            ]
+            [TaskOptionModel(task_id=task_id, **option) for option in options]
             + [
                 TaskAcceptedAnswerModel(task_id=task_id, normalized_value=value)
                 for value in accepted_answers
@@ -173,6 +184,35 @@ class SqlAlchemyTaskRepository:
         updated = await self.get_teacher_task(task_id)
         if updated is None:
             raise RuntimeError("Task disappeared during update")
+        return updated
+
+    async def delete_task(self, task_id: UUID) -> None:
+        await self._session.execute(delete(TaskModel).where(TaskModel.id == task_id))
+
+    async def move_task(self, task_id: UUID, position: int) -> TeacherTaskView:
+        task = await self._session.get(TaskModel, task_id, with_for_update=True)
+        if task is None:
+            raise RuntimeError("Task was removed during reorder")
+        siblings = list(
+            await self._session.scalars(
+                select(TaskModel)
+                .where(TaskModel.lesson_id == task.lesson_id)
+                .order_by(TaskModel.position)
+                .with_for_update()
+            )
+        )
+        ordered = [item for item in siblings if item.id != task_id]
+        target = max(1, min(position, len(siblings)))
+        ordered.insert(target - 1, task)
+        for index, item in enumerate(ordered, start=1):
+            item.position = -index
+        await self._session.flush()
+        for index, item in enumerate(ordered, start=1):
+            item.position = index
+        await self._session.flush()
+        updated = await self.get_teacher_task(task_id)
+        if updated is None:
+            raise RuntimeError("Task disappeared during reorder")
         return updated
 
     async def list_teacher_tasks(self, course_id: UUID) -> list[TeacherTaskView]:
@@ -267,11 +307,16 @@ class SqlAlchemyTaskRepository:
             id=task.id,
             lesson_id=task.lesson_id,
             task_type=TaskType(task.task_type),
-            explanation=task.explanation,
-            result_media_id=task.result_media_id,
             option_ids=tuple(option.id for option in options),
             correct_option_ids=tuple(option.id for option in options if option.is_correct),
+            option_feedback=tuple(
+                OptionFeedback(option.id, option.feedback_text, option.feedback_media_id)
+                for option in options
+            ),
             accepted_answers=tuple(answers),
+            answer_feedback=OptionFeedback(
+                task.id, task.answer_feedback_text, task.answer_feedback_media_id
+            ),
         )
 
     async def create_attempt(
@@ -306,9 +351,17 @@ class SqlAlchemyTaskRepository:
         return AttemptFeedback(
             attempt_id=model.id,
             correct=model.correct,
-            explanation=task.explanation,
-            result_media_id=task.result_media_id,
             correct_option_ids=tuple(option.id for option in options if option.is_correct),
+            option_feedback=tuple(
+                OptionFeedback(option.id, option.feedback_text, option.feedback_media_id)
+                for option in options
+                if selected_option_ids is not None and option.id in selected_option_ids
+            ),
+            answer_feedback=OptionFeedback(
+                task.id, task.answer_feedback_text, task.answer_feedback_media_id
+            )
+            if selected_option_ids is None
+            else None,
             created_at=model.created_at or datetime.now(UTC),
         )
 
@@ -320,4 +373,6 @@ def _editor_option(model: TaskOptionModel) -> TaskOptionEditorView:
         media_id=model.media_id,
         position=model.position,
         is_correct=model.is_correct,
+        feedback_text=model.feedback_text,
+        feedback_media_id=model.feedback_media_id,
     )

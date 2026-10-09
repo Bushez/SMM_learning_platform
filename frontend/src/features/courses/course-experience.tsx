@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
 import type { CourseProgressResponse, CourseResponse } from "@/shared/api/generated/models";
 import { apiFetch } from "@/shared/api/http-client";
+import { ProtectedImage } from "@/shared/ui/protected-image";
 import { ErrorState, LoadingState } from "@/shared/ui/query-state";
 import { AppShell } from "@/widgets/navigation/app-shell";
 
@@ -25,7 +26,7 @@ export function CourseCatalog() {
 }
 
 function CourseCard({ course }: { course: CourseResponse }) {
-  return <article className="group overflow-hidden rounded-[1.75rem] border border-border bg-surface transition hover:-translate-y-1 hover:border-primary/50"><div className="relative aspect-[16/9] overflow-hidden"><Image alt="" className="object-cover transition duration-500 group-hover:scale-105" fill sizes="(min-width: 1280px) 28vw, (min-width: 768px) 45vw, 100vw" src={courseImage} /><div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" /><span className="absolute bottom-4 left-4 rounded-full bg-background/80 px-3 py-1 text-xs font-bold backdrop-blur">{course.category}</span></div><div className="p-5"><h2 className="text-xl font-black">{course.title}</h2><p className="mt-2 line-clamp-2 min-h-12 text-sm leading-6 text-muted-foreground">{course.description}</p><Button className="mt-5 w-full" render={<Link href={`/courses/${course.slug}`} />} variant="secondary">{messages.courses.open}<ArrowRight aria-hidden="true" className="size-4" /></Button></div></article>;
+  return <article className="group overflow-hidden rounded-[1.75rem] border border-border bg-surface transition hover:-translate-y-1 hover:border-primary/50"><div className="relative aspect-[16/9] overflow-hidden">{course.cover_media_id ? <ProtectedImage alt={`Обложка курса ${course.title}`} className="mt-0 size-full object-cover transition duration-500 group-hover:scale-105" fallbackSrc={courseImage} mediaId={course.cover_media_id} /> : <Image alt="" className="object-cover transition duration-500 group-hover:scale-105" fill sizes="(min-width: 1280px) 28vw, (min-width: 768px) 45vw, 100vw" src={courseImage} />}<div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" /><span className="absolute bottom-4 left-4 rounded-full bg-background/80 px-3 py-1 text-xs font-bold backdrop-blur">{course.category}</span></div><div className="p-5"><h2 className="text-xl font-black">{course.title}</h2><p className="mt-2 line-clamp-2 min-h-12 text-sm leading-6 text-muted-foreground">{course.description}</p><Button className="mt-5 w-full" render={<Link href={`/courses/${course.slug}`} />} variant="secondary">{messages.courses.open}<ArrowRight aria-hidden="true" className="size-4" /></Button></div></article>;
 }
 
 export function CourseDetails() {

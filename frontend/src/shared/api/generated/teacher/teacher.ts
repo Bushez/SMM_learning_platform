@@ -33,12 +33,15 @@ import type {
   LessonResponse,
   ListTeacherCoursesParams,
   ModuleResponse,
-  MultipleChoiceTaskRequest,
+  MoveRequest,
+  MoveTaskRequest,
   SingleChoiceTaskRequest,
   TeacherCourseOutlineResponse,
   TeacherTaskResponse,
   TextInputTaskRequest,
-  UpdateCourseRequest
+  UpdateCourseRequest,
+  UpdateLessonRequest,
+  UpdateModuleRequest
 } from '../models';
 
 import { apiFetch } from '../../http-client';
@@ -604,6 +607,296 @@ export const useCreateCourseModule = <TError = HTTPValidationError,
       > => {
       return useMutation(getCreateCourseModuleMutationOptions(options), queryClient);
     }
+    export type updateCourseModuleResponse200 = {
+  data: ModuleResponse
+  status: 200
+}
+
+export type updateCourseModuleResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type updateCourseModuleResponseSuccess = (updateCourseModuleResponse200) & {
+  headers: Headers;
+};
+export type updateCourseModuleResponseError = (updateCourseModuleResponse422) & {
+  headers: Headers;
+};
+
+export type updateCourseModuleResponse = (updateCourseModuleResponseSuccess | updateCourseModuleResponseError)
+
+export const getUpdateCourseModuleUrl = (moduleId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/modules/${moduleId}`
+}
+
+/**
+ * @summary Update own module
+ */
+export const updateCourseModule = async (moduleId: string,
+    updateModuleRequest: UpdateModuleRequest, options?: Parameters<typeof apiFetch>[1]): Promise<updateCourseModuleResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<updateCourseModuleResponse>(getUpdateCourseModuleUrl(moduleId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(updateModuleRequest)
+  }
+);}
+
+
+
+
+
+export const getUpdateCourseModuleMutationKey = () => ['updateCourseModule'] as const;
+
+export const getUpdateCourseModuleMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourseModule>>, TError,UpdateCourseModuleMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCourseModule>>, TError,UpdateCourseModuleMutationVariables, TContext> => {
+
+const mutationKey = getUpdateCourseModuleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCourseModule>>, UpdateCourseModuleMutationVariables> = (props) => {
+          const {moduleId,data} = props ?? {};
+
+          return  updateCourseModule(moduleId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCourseModuleMutationResult = NonNullable<Awaited<ReturnType<typeof updateCourseModule>>>
+    export type UpdateCourseModuleMutationBody = UpdateModuleRequest
+    export type UpdateCourseModuleMutationError = HTTPValidationError
+    export type UpdateCourseModuleMutationVariables = {moduleId: string;data: UpdateModuleRequest}
+
+    /**
+ * @summary Update own module
+ */
+export const useUpdateCourseModule = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourseModule>>, TError,UpdateCourseModuleMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateCourseModule>>,
+        TError,
+        UpdateCourseModuleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateCourseModuleMutationOptions(options), queryClient);
+    }
+    export type deleteCourseModuleResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteCourseModuleResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type deleteCourseModuleResponseSuccess = (deleteCourseModuleResponse204) & {
+  headers: Headers;
+};
+export type deleteCourseModuleResponseError = (deleteCourseModuleResponse422) & {
+  headers: Headers;
+};
+
+export type deleteCourseModuleResponse = (deleteCourseModuleResponseSuccess | deleteCourseModuleResponseError)
+
+export const getDeleteCourseModuleUrl = (moduleId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/modules/${moduleId}`
+}
+
+/**
+ * @summary Delete own empty-progress module
+ */
+export const deleteCourseModule = async (moduleId: string, options?: Parameters<typeof apiFetch>[1]): Promise<deleteCourseModuleResponse> => {
+
+  return apiFetch<deleteCourseModuleResponse>(getDeleteCourseModuleUrl(moduleId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteCourseModuleMutationKey = () => ['deleteCourseModule'] as const;
+
+export const getDeleteCourseModuleMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCourseModule>>, TError,DeleteCourseModuleMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCourseModule>>, TError,DeleteCourseModuleMutationVariables, TContext> => {
+
+const mutationKey = getDeleteCourseModuleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCourseModule>>, DeleteCourseModuleMutationVariables> = (props) => {
+          const {moduleId} = props ?? {};
+
+          return  deleteCourseModule(moduleId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCourseModuleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCourseModule>>>
+
+    export type DeleteCourseModuleMutationError = HTTPValidationError
+    export type DeleteCourseModuleMutationVariables = {moduleId: string}
+
+    /**
+ * @summary Delete own empty-progress module
+ */
+export const useDeleteCourseModule = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCourseModule>>, TError,DeleteCourseModuleMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCourseModule>>,
+        TError,
+        DeleteCourseModuleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteCourseModuleMutationOptions(options), queryClient);
+    }
+    export type moveCourseModuleResponse200 = {
+  data: ModuleResponse
+  status: 200
+}
+
+export type moveCourseModuleResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type moveCourseModuleResponseSuccess = (moveCourseModuleResponse200) & {
+  headers: Headers;
+};
+export type moveCourseModuleResponseError = (moveCourseModuleResponse422) & {
+  headers: Headers;
+};
+
+export type moveCourseModuleResponse = (moveCourseModuleResponseSuccess | moveCourseModuleResponseError)
+
+export const getMoveCourseModuleUrl = (moduleId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/modules/${moduleId}/move`
+}
+
+/**
+ * @summary Move own module
+ */
+export const moveCourseModule = async (moduleId: string,
+    moveRequest: MoveRequest, options?: Parameters<typeof apiFetch>[1]): Promise<moveCourseModuleResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<moveCourseModuleResponse>(getMoveCourseModuleUrl(moduleId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(moveRequest)
+  }
+);}
+
+
+
+
+
+export const getMoveCourseModuleMutationKey = () => ['moveCourseModule'] as const;
+
+export const getMoveCourseModuleMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof moveCourseModule>>, TError,MoveCourseModuleMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof moveCourseModule>>, TError,MoveCourseModuleMutationVariables, TContext> => {
+
+const mutationKey = getMoveCourseModuleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof moveCourseModule>>, MoveCourseModuleMutationVariables> = (props) => {
+          const {moduleId,data} = props ?? {};
+
+          return  moveCourseModule(moduleId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MoveCourseModuleMutationResult = NonNullable<Awaited<ReturnType<typeof moveCourseModule>>>
+    export type MoveCourseModuleMutationBody = MoveRequest
+    export type MoveCourseModuleMutationError = HTTPValidationError
+    export type MoveCourseModuleMutationVariables = {moduleId: string;data: MoveRequest}
+
+    /**
+ * @summary Move own module
+ */
+export const useMoveCourseModule = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof moveCourseModule>>, TError,MoveCourseModuleMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof moveCourseModule>>,
+        TError,
+        MoveCourseModuleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getMoveCourseModuleMutationOptions(options), queryClient);
+    }
     export type createLessonResponse201 = {
   data: LessonResponse
   status: 201
@@ -702,6 +995,296 @@ export const useCreateLesson = <TError = HTTPValidationError,
         TContext
       > => {
       return useMutation(getCreateLessonMutationOptions(options), queryClient);
+    }
+    export type updateCourseLessonResponse200 = {
+  data: LessonResponse
+  status: 200
+}
+
+export type updateCourseLessonResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type updateCourseLessonResponseSuccess = (updateCourseLessonResponse200) & {
+  headers: Headers;
+};
+export type updateCourseLessonResponseError = (updateCourseLessonResponse422) & {
+  headers: Headers;
+};
+
+export type updateCourseLessonResponse = (updateCourseLessonResponseSuccess | updateCourseLessonResponseError)
+
+export const getUpdateCourseLessonUrl = (lessonId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/lessons/${lessonId}`
+}
+
+/**
+ * @summary Update own lesson
+ */
+export const updateCourseLesson = async (lessonId: string,
+    updateLessonRequest: UpdateLessonRequest, options?: Parameters<typeof apiFetch>[1]): Promise<updateCourseLessonResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<updateCourseLessonResponse>(getUpdateCourseLessonUrl(lessonId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(updateLessonRequest)
+  }
+);}
+
+
+
+
+
+export const getUpdateCourseLessonMutationKey = () => ['updateCourseLesson'] as const;
+
+export const getUpdateCourseLessonMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourseLesson>>, TError,UpdateCourseLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCourseLesson>>, TError,UpdateCourseLessonMutationVariables, TContext> => {
+
+const mutationKey = getUpdateCourseLessonMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCourseLesson>>, UpdateCourseLessonMutationVariables> = (props) => {
+          const {lessonId,data} = props ?? {};
+
+          return  updateCourseLesson(lessonId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCourseLessonMutationResult = NonNullable<Awaited<ReturnType<typeof updateCourseLesson>>>
+    export type UpdateCourseLessonMutationBody = UpdateLessonRequest
+    export type UpdateCourseLessonMutationError = HTTPValidationError
+    export type UpdateCourseLessonMutationVariables = {lessonId: string;data: UpdateLessonRequest}
+
+    /**
+ * @summary Update own lesson
+ */
+export const useUpdateCourseLesson = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourseLesson>>, TError,UpdateCourseLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateCourseLesson>>,
+        TError,
+        UpdateCourseLessonMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateCourseLessonMutationOptions(options), queryClient);
+    }
+    export type deleteCourseLessonResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteCourseLessonResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type deleteCourseLessonResponseSuccess = (deleteCourseLessonResponse204) & {
+  headers: Headers;
+};
+export type deleteCourseLessonResponseError = (deleteCourseLessonResponse422) & {
+  headers: Headers;
+};
+
+export type deleteCourseLessonResponse = (deleteCourseLessonResponseSuccess | deleteCourseLessonResponseError)
+
+export const getDeleteCourseLessonUrl = (lessonId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/lessons/${lessonId}`
+}
+
+/**
+ * @summary Delete own empty-progress lesson
+ */
+export const deleteCourseLesson = async (lessonId: string, options?: Parameters<typeof apiFetch>[1]): Promise<deleteCourseLessonResponse> => {
+
+  return apiFetch<deleteCourseLessonResponse>(getDeleteCourseLessonUrl(lessonId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteCourseLessonMutationKey = () => ['deleteCourseLesson'] as const;
+
+export const getDeleteCourseLessonMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCourseLesson>>, TError,DeleteCourseLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCourseLesson>>, TError,DeleteCourseLessonMutationVariables, TContext> => {
+
+const mutationKey = getDeleteCourseLessonMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCourseLesson>>, DeleteCourseLessonMutationVariables> = (props) => {
+          const {lessonId} = props ?? {};
+
+          return  deleteCourseLesson(lessonId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCourseLessonMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCourseLesson>>>
+
+    export type DeleteCourseLessonMutationError = HTTPValidationError
+    export type DeleteCourseLessonMutationVariables = {lessonId: string}
+
+    /**
+ * @summary Delete own empty-progress lesson
+ */
+export const useDeleteCourseLesson = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCourseLesson>>, TError,DeleteCourseLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCourseLesson>>,
+        TError,
+        DeleteCourseLessonMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteCourseLessonMutationOptions(options), queryClient);
+    }
+    export type moveCourseLessonResponse200 = {
+  data: LessonResponse
+  status: 200
+}
+
+export type moveCourseLessonResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type moveCourseLessonResponseSuccess = (moveCourseLessonResponse200) & {
+  headers: Headers;
+};
+export type moveCourseLessonResponseError = (moveCourseLessonResponse422) & {
+  headers: Headers;
+};
+
+export type moveCourseLessonResponse = (moveCourseLessonResponseSuccess | moveCourseLessonResponseError)
+
+export const getMoveCourseLessonUrl = (lessonId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/courses/lessons/${lessonId}/move`
+}
+
+/**
+ * @summary Move own lesson
+ */
+export const moveCourseLesson = async (lessonId: string,
+    moveRequest: MoveRequest, options?: Parameters<typeof apiFetch>[1]): Promise<moveCourseLessonResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<moveCourseLessonResponse>(getMoveCourseLessonUrl(lessonId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(moveRequest)
+  }
+);}
+
+
+
+
+
+export const getMoveCourseLessonMutationKey = () => ['moveCourseLesson'] as const;
+
+export const getMoveCourseLessonMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof moveCourseLesson>>, TError,MoveCourseLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof moveCourseLesson>>, TError,MoveCourseLessonMutationVariables, TContext> => {
+
+const mutationKey = getMoveCourseLessonMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof moveCourseLesson>>, MoveCourseLessonMutationVariables> = (props) => {
+          const {lessonId,data} = props ?? {};
+
+          return  moveCourseLesson(lessonId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MoveCourseLessonMutationResult = NonNullable<Awaited<ReturnType<typeof moveCourseLesson>>>
+    export type MoveCourseLessonMutationBody = MoveRequest
+    export type MoveCourseLessonMutationError = HTTPValidationError
+    export type MoveCourseLessonMutationVariables = {lessonId: string;data: MoveRequest}
+
+    /**
+ * @summary Move own lesson
+ */
+export const useMoveCourseLesson = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof moveCourseLesson>>, TError,MoveCourseLessonMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof moveCourseLesson>>,
+        TError,
+        MoveCourseLessonMutationVariables,
+        TContext
+      > => {
+      return useMutation(getMoveCourseLessonMutationOptions(options), queryClient);
     }
     export type publishCourseResponse200 = {
   data: CourseResponse
@@ -918,7 +1501,7 @@ export const getCreateTaskUrl = (lessonId: string,) => {
  * @summary Create a task in an owned lesson
  */
 export const createTask = async (lessonId: string,
-    singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<createTaskResponse> => {
+    singleChoiceTaskRequestTextInputTaskRequest: SingleChoiceTaskRequest | TextInputTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<createTaskResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -931,7 +1514,7 @@ return apiFetch<createTaskResponse>(getCreateTaskUrl(lessonId),
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest)
+    body: JSON.stringify(singleChoiceTaskRequestTextInputTaskRequest)
   }
 );}
 
@@ -969,9 +1552,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof createTask>>>
-    export type CreateTaskMutationBody = SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest
+    export type CreateTaskMutationBody = SingleChoiceTaskRequest | TextInputTaskRequest
     export type CreateTaskMutationError = HTTPValidationError
-    export type CreateTaskMutationVariables = {lessonId: string;data: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest}
+    export type CreateTaskMutationVariables = {lessonId: string;data: SingleChoiceTaskRequest | TextInputTaskRequest}
 
     /**
  * @summary Create a task in an owned lesson
@@ -1014,10 +1597,10 @@ export const getReplaceTeacherTaskUrl = (taskId: string,) => {
 }
 
 /**
- * @summary Replace an owned task that has no learner progress
+ * @summary Replace an owned task while preserving attempt and progress records
  */
 export const replaceTeacherTask = async (taskId: string,
-    singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<replaceTeacherTaskResponse> => {
+    singleChoiceTaskRequestTextInputTaskRequest: SingleChoiceTaskRequest | TextInputTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<replaceTeacherTaskResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -1030,7 +1613,7 @@ return apiFetch<replaceTeacherTaskResponse>(getReplaceTeacherTaskUrl(taskId),
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(singleChoiceTaskRequestMultipleChoiceTaskRequestTextInputTaskRequest)
+    body: JSON.stringify(singleChoiceTaskRequestTextInputTaskRequest)
   }
 );}
 
@@ -1068,12 +1651,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type ReplaceTeacherTaskMutationResult = NonNullable<Awaited<ReturnType<typeof replaceTeacherTask>>>
-    export type ReplaceTeacherTaskMutationBody = SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest
+    export type ReplaceTeacherTaskMutationBody = SingleChoiceTaskRequest | TextInputTaskRequest
     export type ReplaceTeacherTaskMutationError = HTTPValidationError
-    export type ReplaceTeacherTaskMutationVariables = {taskId: string;data: SingleChoiceTaskRequest | MultipleChoiceTaskRequest | TextInputTaskRequest}
+    export type ReplaceTeacherTaskMutationVariables = {taskId: string;data: SingleChoiceTaskRequest | TextInputTaskRequest}
 
     /**
- * @summary Replace an owned task that has no learner progress
+ * @summary Replace an owned task while preserving attempt and progress records
  */
 export const useReplaceTeacherTask = <TError = HTTPValidationError,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof replaceTeacherTask>>, TError,ReplaceTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
@@ -1084,6 +1667,98 @@ export const useReplaceTeacherTask = <TError = HTTPValidationError,
         TContext
       > => {
       return useMutation(getReplaceTeacherTaskMutationOptions(options), queryClient);
+    }
+    export type deleteTeacherTaskResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteTeacherTaskResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type deleteTeacherTaskResponseSuccess = (deleteTeacherTaskResponse204) & {
+  headers: Headers;
+};
+export type deleteTeacherTaskResponseError = (deleteTeacherTaskResponse422) & {
+  headers: Headers;
+};
+
+export type deleteTeacherTaskResponse = (deleteTeacherTaskResponseSuccess | deleteTeacherTaskResponseError)
+
+export const getDeleteTeacherTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/tasks/${taskId}`
+}
+
+/**
+ * @summary Delete an owned task without learner progress
+ */
+export const deleteTeacherTask = async (taskId: string, options?: Parameters<typeof apiFetch>[1]): Promise<deleteTeacherTaskResponse> => {
+
+  return apiFetch<deleteTeacherTaskResponse>(getDeleteTeacherTaskUrl(taskId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteTeacherTaskMutationKey = () => ['deleteTeacherTask'] as const;
+
+export const getDeleteTeacherTaskMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTeacherTask>>, TError,DeleteTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTeacherTask>>, TError,DeleteTeacherTaskMutationVariables, TContext> => {
+
+const mutationKey = getDeleteTeacherTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTeacherTask>>, DeleteTeacherTaskMutationVariables> = (props) => {
+          const {taskId} = props ?? {};
+
+          return  deleteTeacherTask(taskId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTeacherTaskMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTeacherTask>>>
+
+    export type DeleteTeacherTaskMutationError = HTTPValidationError
+    export type DeleteTeacherTaskMutationVariables = {taskId: string}
+
+    /**
+ * @summary Delete an owned task without learner progress
+ */
+export const useDeleteTeacherTask = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTeacherTask>>, TError,DeleteTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTeacherTask>>,
+        TError,
+        DeleteTeacherTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteTeacherTaskMutationOptions(options), queryClient);
     }
     export type getTeacherTaskResponse200 = {
   data: TeacherTaskResponse
@@ -1204,7 +1879,106 @@ export function useGetTeacherTask<TData = Awaited<ReturnType<typeof getTeacherTa
 
 
 
-export type listTeacherCourseTasksResponse200 = {
+export type moveTeacherTaskResponse200 = {
+  data: TeacherTaskResponse
+  status: 200
+}
+
+export type moveTeacherTaskResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type moveTeacherTaskResponseSuccess = (moveTeacherTaskResponse200) & {
+  headers: Headers;
+};
+export type moveTeacherTaskResponseError = (moveTeacherTaskResponse422) & {
+  headers: Headers;
+};
+
+export type moveTeacherTaskResponse = (moveTeacherTaskResponseSuccess | moveTeacherTaskResponseError)
+
+export const getMoveTeacherTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `/api/v1/teacher/tasks/${taskId}/move`
+}
+
+/**
+ * @summary Move an owned task
+ */
+export const moveTeacherTask = async (taskId: string,
+    moveTaskRequest: MoveTaskRequest, options?: Parameters<typeof apiFetch>[1]): Promise<moveTeacherTaskResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return apiFetch<moveTeacherTaskResponse>(getMoveTeacherTaskUrl(taskId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(moveTaskRequest)
+  }
+);}
+
+
+
+
+
+export const getMoveTeacherTaskMutationKey = () => ['moveTeacherTask'] as const;
+
+export const getMoveTeacherTaskMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof moveTeacherTask>>, TError,MoveTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof moveTeacherTask>>, TError,MoveTeacherTaskMutationVariables, TContext> => {
+
+const mutationKey = getMoveTeacherTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof moveTeacherTask>>, MoveTeacherTaskMutationVariables> = (props) => {
+          const {taskId,data} = props ?? {};
+
+          return  moveTeacherTask(taskId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MoveTeacherTaskMutationResult = NonNullable<Awaited<ReturnType<typeof moveTeacherTask>>>
+    export type MoveTeacherTaskMutationBody = MoveTaskRequest
+    export type MoveTeacherTaskMutationError = HTTPValidationError
+    export type MoveTeacherTaskMutationVariables = {taskId: string;data: MoveTaskRequest}
+
+    /**
+ * @summary Move an owned task
+ */
+export const useMoveTeacherTask = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof moveTeacherTask>>, TError,MoveTeacherTaskMutationVariables, TContext>, request?: SecondParameter<typeof apiFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof moveTeacherTask>>,
+        TError,
+        MoveTeacherTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getMoveTeacherTaskMutationOptions(options), queryClient);
+    }
+    export type listTeacherCourseTasksResponse200 = {
   data: TeacherTaskResponse[]
   status: 200
 }

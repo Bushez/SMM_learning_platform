@@ -12,4 +12,6 @@ export interface TeacherTaskOptionResponse {
   media_id: string | null;
   position: number;
   is_correct: boolean;
+  feedback_text: string | null;
+  feedback_media_id: string | null;
 }

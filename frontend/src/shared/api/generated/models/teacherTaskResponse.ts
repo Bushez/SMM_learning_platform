@@ -15,8 +15,8 @@ export interface TeacherTaskResponse {
   position: number;
   prompt: string;
   prompt_media_id: string | null;
-  explanation: string;
-  result_media_id: string | null;
+  answer_feedback_text: string | null;
+  answer_feedback_media_id: string | null;
   options: TeacherTaskOptionResponse[];
   accepted_answers: string[];
 }

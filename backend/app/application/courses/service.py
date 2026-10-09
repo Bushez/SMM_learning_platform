@@ -8,9 +8,15 @@ from app.domain.courses import CourseStatus
 from .dto import CourseView, LessonView, ModuleView, TeacherCourseOutlineView
 from .ports import CourseRepository, CourseTransaction
 
+_TRANSLITERATION = str.maketrans(
+    "абвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+    "abvgdeejzijklmnoprstufhzcss_y_eua",
+)
+
 
 def slugify(value: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", value.casefold()).strip("-")
+    transliterated = value.casefold().translate(_TRANSLITERATION)
+    slug = re.sub(r"[^a-z0-9]+", "-", transliterated).strip("-")
     return slug or "course"
 
 
@@ -31,7 +37,6 @@ class CourseService:
         *,
         author_id: UUID,
         title: str,
-        slug: str,
         description: str,
         category: str,
         language_code: str,
@@ -39,7 +44,7 @@ class CourseService:
         course = await self._courses.create_course(
             author_id=author_id,
             title=title.strip(),
-            slug=slugify(slug),
+            slug=slugify(title),
             description=description.strip(),
             category=category.strip(),
             language_code=language_code,
@@ -135,6 +140,73 @@ class CourseService:
         await self._transaction.commit()
         return lesson
 
+    async def update_module(
+        self, *, author_id: UUID, module_id: UUID, title: str, description: str | None
+    ) -> ModuleView:
+        module = await self._owned_module(author_id=author_id, module_id=module_id)
+        updated = await self._courses.update_module(
+            module.id, title=title.strip(), description=description
+        )
+        await self._transaction.commit()
+        return updated
+
+    async def delete_module(self, *, author_id: UUID, module_id: UUID) -> None:
+        await self._owned_module(author_id=author_id, module_id=module_id)
+        if await self._courses.module_has_learner_progress(module_id):
+            raise ValidationError("Modules with learner progress cannot be deleted")
+        await self._courses.delete_module(module_id)
+        await self._transaction.commit()
+
+    async def move_module(self, *, author_id: UUID, module_id: UUID, position: int) -> ModuleView:
+        await self._owned_module(author_id=author_id, module_id=module_id)
+        if await self._courses.module_has_learner_progress(module_id):
+            raise ValidationError("Modules with learner progress cannot be reordered")
+        updated = await self._courses.move_module(module_id, position)
+        await self._transaction.commit()
+        return updated
+
+    async def update_lesson(
+        self, *, author_id: UUID, lesson_id: UUID, title: str, description: str | None
+    ) -> LessonView:
+        lesson = await self._owned_lesson(author_id=author_id, lesson_id=lesson_id)
+        updated = await self._courses.update_lesson(
+            lesson.id, title=title.strip(), description=description
+        )
+        await self._transaction.commit()
+        return updated
+
+    async def delete_lesson(self, *, author_id: UUID, lesson_id: UUID) -> None:
+        await self._owned_lesson(author_id=author_id, lesson_id=lesson_id)
+        if await self._courses.lesson_has_learner_progress(lesson_id):
+            raise ValidationError("Lessons with learner progress cannot be deleted")
+        await self._courses.delete_lesson(lesson_id)
+        await self._transaction.commit()
+
+    async def move_lesson(self, *, author_id: UUID, lesson_id: UUID, position: int) -> LessonView:
+        await self._owned_lesson(author_id=author_id, lesson_id=lesson_id)
+        if await self._courses.lesson_has_learner_progress(lesson_id):
+            raise ValidationError("Lessons with learner progress cannot be reordered")
+        updated = await self._courses.move_lesson(lesson_id, position)
+        await self._transaction.commit()
+        return updated
+
+    async def _owned_module(self, *, author_id: UUID, module_id: UUID) -> ModuleView:
+        module = await self._courses.get_module(module_id)
+        if module is None:
+            raise NotFoundError("Module not found")
+        await self.teacher_course(author_id=author_id, course_id=module.course_id)
+        return module
+
+    async def _owned_lesson(self, *, author_id: UUID, lesson_id: UUID) -> LessonView:
+        lesson = await self._courses.get_lesson(lesson_id)
+        if lesson is None:
+            raise NotFoundError("Lesson not found")
+        module = await self._courses.get_module(lesson.module_id)
+        if module is None:
+            raise NotFoundError("Module not found")
+        await self.teacher_course(author_id=author_id, course_id=module.course_id)
+        return lesson
+
     async def publish(self, *, author_id: UUID, course_id: UUID) -> CourseView:
         await self.teacher_course(author_id=author_id, course_id=course_id)
         issues = await self._courses.publish_issues(course_id)
@@ -151,8 +223,6 @@ class CourseService:
     async def archive(self, *, author_id: UUID, course_id: UUID) -> CourseView:
         """Retire a course without removing learner-accessible content or progress."""
         await self.teacher_course(author_id=author_id, course_id=course_id)
-        course = await self._courses.update_course(
-            course_id, status=CourseStatus.ARCHIVED.value
-        )
+        course = await self._courses.update_course(course_id, status=CourseStatus.ARCHIVED.value)
         await self._transaction.commit()
         return course

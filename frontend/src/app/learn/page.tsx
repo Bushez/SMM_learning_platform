@@ -1,5 +1,5 @@
-import { CourseCatalog } from "@/features/courses/course-experience";
+import { LearningHome } from "@/features/learning/learning-home";
 
 export default function LearningPage() {
-  return <CourseCatalog />;
+  return <LearningHome />;
 }

@@ -571,6 +571,161 @@
         }
       }
     },
+    "/api/v1/teacher/courses/modules/{module_id}": {
+      "patch": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Update own module",
+        "operationId": "updateCourseModule",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Delete own empty-progress module",
+        "operationId": "deleteCourseModule",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teacher/courses/modules/{module_id}/move": {
+      "post": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Move own module",
+        "operationId": "moveCourseModule",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/teacher/courses/modules/{module_id}/lessons": {
       "post": {
         "tags": [
@@ -607,6 +762,161 @@
         },
         "responses": {
           "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teacher/courses/lessons/{lesson_id}": {
+      "patch": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Update own lesson",
+        "operationId": "updateCourseLesson",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lesson Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLessonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Delete own empty-progress lesson",
+        "operationId": "deleteCourseLesson",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lesson Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teacher/courses/lessons/{lesson_id}/move": {
+      "post": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Move own lesson",
+        "operationId": "moveCourseLesson",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lesson Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -1117,9 +1427,6 @@
                     "$ref": "#/components/schemas/SingleChoiceTaskRequest"
                   },
                   {
-                    "$ref": "#/components/schemas/MultipleChoiceTaskRequest"
-                  },
-                  {
                     "$ref": "#/components/schemas/TextInputTaskRequest"
                   }
                 ],
@@ -1127,7 +1434,6 @@
                   "propertyName": "task_type",
                   "mapping": {
                     "SINGLE_CHOICE": "#/components/schemas/SingleChoiceTaskRequest",
-                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceTaskRequest",
                     "TEXT_INPUT": "#/components/schemas/TextInputTaskRequest"
                   }
                 },
@@ -1165,7 +1471,7 @@
         "tags": [
           "Teacher"
         ],
-        "summary": "Replace an owned task that has no learner progress",
+        "summary": "Replace an owned task while preserving attempt and progress records",
         "operationId": "replaceTeacherTask",
         "security": [
           {
@@ -1194,9 +1500,6 @@
                     "$ref": "#/components/schemas/SingleChoiceTaskRequest"
                   },
                   {
-                    "$ref": "#/components/schemas/MultipleChoiceTaskRequest"
-                  },
-                  {
                     "$ref": "#/components/schemas/TextInputTaskRequest"
                   }
                 ],
@@ -1204,7 +1507,6 @@
                   "propertyName": "task_type",
                   "mapping": {
                     "SINGLE_CHOICE": "#/components/schemas/SingleChoiceTaskRequest",
-                    "MULTIPLE_CHOICE": "#/components/schemas/MultipleChoiceTaskRequest",
                     "TEXT_INPUT": "#/components/schemas/TextInputTaskRequest"
                   }
                 },
@@ -1223,6 +1525,45 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Delete an owned task without learner progress",
+        "operationId": "deleteTeacherTask",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -1259,6 +1600,64 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teacher/tasks/{task_id}/move": {
+      "post": {
+        "tags": [
+          "Teacher"
+        ],
+        "summary": "Move an owned task",
+        "operationId": "moveTeacherTask",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveTaskRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1467,22 +1866,6 @@
             "type": "boolean",
             "title": "Correct"
           },
-          "explanation": {
-            "type": "string",
-            "title": "Explanation"
-          },
-          "result_media_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result Media Id"
-          },
           "correct_option_ids": {
             "items": {
               "type": "string",
@@ -1490,6 +1873,23 @@
             },
             "type": "array",
             "title": "Correct Option Ids"
+          },
+          "option_feedback": {
+            "items": {
+              "$ref": "#/components/schemas/OptionFeedbackResponse"
+            },
+            "type": "array",
+            "title": "Option Feedback"
+          },
+          "answer_feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OptionFeedbackResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "first_task_completion": {
             "type": "boolean",
@@ -1553,9 +1953,9 @@
         "required": [
           "attempt_id",
           "correct",
-          "explanation",
-          "result_media_id",
           "correct_option_ids",
+          "option_feedback",
+          "answer_feedback",
           "first_task_completion",
           "task_completed",
           "lesson_completed",
@@ -1756,12 +2156,6 @@
             "minLength": 2,
             "title": "Title"
           },
-          "slug": {
-            "type": "string",
-            "maxLength": 180,
-            "minLength": 2,
-            "title": "Slug"
-          },
           "description": {
             "type": "string",
             "maxLength": 10000,
@@ -1785,7 +2179,6 @@
         "type": "object",
         "required": [
           "title",
-          "slug",
           "description",
           "category"
         ],
@@ -2326,79 +2719,72 @@
         ],
         "title": "ModuleResponse"
       },
-      "MultipleChoiceTaskRequest": {
+      "MoveRequest": {
         "properties": {
           "position": {
             "type": "integer",
             "minimum": 1.0,
             "title": "Position"
-          },
-          "prompt": {
-            "type": "string",
-            "maxLength": 10000,
-            "minLength": 1,
-            "title": "Prompt"
-          },
-          "prompt_media_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Prompt Media Id"
-          },
-          "explanation": {
-            "type": "string",
-            "maxLength": 10000,
-            "minLength": 1,
-            "title": "Explanation"
-          },
-          "result_media_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result Media Id"
-          },
-          "task_type": {
-            "type": "string",
-            "const": "MULTIPLE_CHOICE",
-            "title": "Task Type"
-          },
-          "options": {
-            "items": {
-              "$ref": "#/components/schemas/TaskOptionRequest"
-            },
-            "type": "array",
-            "minItems": 2,
-            "title": "Options"
-          },
-          "accepted_answers": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Accepted Answers"
           }
         },
         "type": "object",
         "required": [
-          "position",
-          "prompt",
-          "explanation",
-          "task_type",
-          "options"
+          "position"
         ],
-        "title": "MultipleChoiceTaskRequest"
+        "title": "MoveRequest"
+      },
+      "MoveTaskRequest": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position"
+        ],
+        "title": "MoveTaskRequest"
+      },
+      "OptionFeedbackResponse": {
+        "properties": {
+          "option_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Option Id"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "option_id",
+          "text",
+          "media_id"
+        ],
+        "title": "OptionFeedbackResponse"
       },
       "ReadinessChecks": {
         "properties": {
@@ -2514,13 +2900,19 @@
             ],
             "title": "Prompt Media Id"
           },
-          "explanation": {
-            "type": "string",
-            "maxLength": 10000,
-            "minLength": 1,
-            "title": "Explanation"
+          "answer_feedback_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Feedback Text"
           },
-          "result_media_id": {
+          "answer_feedback_media_id": {
             "anyOf": [
               {
                 "type": "string",
@@ -2530,7 +2922,7 @@
                 "type": "null"
               }
             ],
-            "title": "Result Media Id"
+            "title": "Answer Feedback Media Id"
           },
           "task_type": {
             "type": "string",
@@ -2557,7 +2949,6 @@
         "required": [
           "position",
           "prompt",
-          "explanation",
           "task_type",
           "options"
         ],
@@ -2597,6 +2988,30 @@
           "is_correct": {
             "type": "boolean",
             "title": "Is Correct"
+          },
+          "feedback_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Text"
+          },
+          "feedback_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Media Id"
           }
         },
         "type": "object",
@@ -2680,6 +3095,29 @@
           "is_correct": {
             "type": "boolean",
             "title": "Is Correct"
+          },
+          "feedback_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Text"
+          },
+          "feedback_media_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Media Id"
           }
         },
         "type": "object",
@@ -2688,7 +3126,9 @@
           "text",
           "media_id",
           "position",
-          "is_correct"
+          "is_correct",
+          "feedback_text",
+          "feedback_media_id"
         ],
         "title": "TeacherTaskOptionResponse"
       },
@@ -2727,11 +3167,18 @@
             ],
             "title": "Prompt Media Id"
           },
-          "explanation": {
-            "type": "string",
-            "title": "Explanation"
+          "answer_feedback_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Feedback Text"
           },
-          "result_media_id": {
+          "answer_feedback_media_id": {
             "anyOf": [
               {
                 "type": "string",
@@ -2741,7 +3188,7 @@
                 "type": "null"
               }
             ],
-            "title": "Result Media Id"
+            "title": "Answer Feedback Media Id"
           },
           "options": {
             "items": {
@@ -2766,8 +3213,8 @@
           "position",
           "prompt",
           "prompt_media_id",
-          "explanation",
-          "result_media_id",
+          "answer_feedback_text",
+          "answer_feedback_media_id",
           "options",
           "accepted_answers"
         ],
@@ -2819,13 +3266,19 @@
             ],
             "title": "Prompt Media Id"
           },
-          "explanation": {
-            "type": "string",
-            "maxLength": 10000,
-            "minLength": 1,
-            "title": "Explanation"
+          "answer_feedback_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Feedback Text"
           },
-          "result_media_id": {
+          "answer_feedback_media_id": {
             "anyOf": [
               {
                 "type": "string",
@@ -2835,7 +3288,7 @@
                 "type": "null"
               }
             ],
-            "title": "Result Media Id"
+            "title": "Answer Feedback Media Id"
           },
           "task_type": {
             "type": "string",
@@ -2862,7 +3315,6 @@
         "required": [
           "position",
           "prompt",
-          "explanation",
           "task_type",
           "accepted_answers"
         ],
@@ -2950,6 +3402,60 @@
         },
         "type": "object",
         "title": "UpdateCourseRequest"
+      },
+      "UpdateLessonRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "UpdateLessonRequest"
+      },
+      "UpdateModuleRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "UpdateModuleRequest"
       },
       "UserResponse": {
         "properties": {

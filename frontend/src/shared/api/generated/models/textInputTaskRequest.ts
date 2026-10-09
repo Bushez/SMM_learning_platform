@@ -16,12 +16,8 @@ export interface TextInputTaskRequest {
      */
   prompt: string;
   prompt_media_id?: string | null;
-  /**
-     * @minLength 1
-     * @maxLength 10000
-     */
-  explanation: string;
-  result_media_id?: string | null;
+  answer_feedback_text?: string | null;
+  answer_feedback_media_id?: string | null;
   task_type: 'TEXT_INPUT';
   options?: TaskOptionRequest[];
   /** @minItems 1 */
