@@ -29,7 +29,7 @@ class PhotoLabService:
                 "Михаил Рощин",
                 "Тёплая плёнка, мягкие света.",
                 PhotoAdjustments(
-                    exposure=0.15,
+                    exposure=-3.5,
                     temperature=28,
                     tint=6,
                     contrast=-4,
@@ -47,7 +47,7 @@ class PhotoLabService:
                 "Ирина Волкова",
                 "Холодная атмосфера и глубокий контраст.",
                 PhotoAdjustments(
-                    exposure=-0.2,
+                    exposure=1.1,
                     temperature=-24,
                     tint=4,
                     contrast=28,
