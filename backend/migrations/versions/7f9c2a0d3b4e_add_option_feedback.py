@@ -5,9 +5,8 @@ Revises: cf51e8a1d322
 Create Date: 2026-10-09
 """
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 revision = "7f9c2a0d3b4e"
 down_revision = "cf51e8a1d322"
@@ -29,6 +28,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint("fk_task_options_feedback_media_id_media_assets", "task_options", type_="foreignkey")
+    op.drop_constraint(
+        "fk_task_options_feedback_media_id_media_assets",
+        "task_options",
+        type_="foreignkey",
+    )
     op.drop_column("task_options", "feedback_media_id")
     op.drop_column("task_options", "feedback_text")
