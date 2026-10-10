@@ -16,6 +16,7 @@ class MinioStorage:
         secret_key: str,
         bucket: str,
         secure: bool,
+        public_secure: bool = False,
     ) -> None:
         self._client = Minio(
             endpoint,
@@ -28,7 +29,7 @@ class MinioStorage:
             public_endpoint,
             access_key=access_key,
             secret_key=secret_key,
-            secure=secure,
+            secure=public_secure,
             region=region,
         )
         self._bucket = bucket

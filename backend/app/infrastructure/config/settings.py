@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket: str = "visual-learning-media"
     minio_secure: bool = False
+    minio_public_secure: bool = False
     max_upload_size_bytes: int = Field(default=10 * 1024 * 1024, ge=1024)
     task_completion_xp: int = Field(default=10, ge=1, le=100)
 

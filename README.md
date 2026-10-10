@@ -104,7 +104,10 @@ no more than `MAX_UPLOAD_SIZE_BYTES`, verifies the actual image format and dimen
 then stores the file under a generated object key in MinIO and persists only `MediaAsset` metadata.
 `cover_media_id` can be set only to an asset owned by the course teacher. `MINIO_ENDPOINT` is the
 internal service endpoint; `MINIO_PUBLIC_ENDPOINT` is the host placed into browser-visible signed
-download URLs (use `localhost:9000` for local Compose).
+download URLs (use `localhost:9000` for local Compose). `MINIO_SECURE` controls the internal
+connection independently from `MINIO_PUBLIC_SECURE`; a typical VPS deployment uses internal HTTP
+(`MINIO_SECURE=false`) and public HTTPS (`MINIO_PUBLIC_SECURE=true`). Endpoint values must not
+include an `http://` or `https://` scheme.
 
 ## Task engine
 

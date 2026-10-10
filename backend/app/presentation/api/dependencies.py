@@ -85,6 +85,7 @@ def get_media_service(
             secret_key=settings.minio_secret_key,
             bucket=settings.minio_bucket,
             secure=settings.minio_secure,
+            public_secure=settings.minio_public_secure,
         ),
         inspector=PillowImageInspector(max_size_bytes=settings.max_upload_size_bytes),
         transaction=SqlAlchemyTransaction(session),

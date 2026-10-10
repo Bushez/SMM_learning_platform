@@ -111,3 +111,21 @@ async def test_signed_url_uses_public_endpoint_without_a_network_region_lookup()
     url = await storage.get_download_url(object_key="images/example.png")
 
     assert url.startswith("http://localhost:9000/visual-learning-media/images/example.png?")
+
+
+@pytest.mark.asyncio
+async def test_signed_url_can_use_https_while_internal_client_uses_http() -> None:
+    storage = MinioStorage(
+        endpoint="minio:9000",
+        public_endpoint="media.example.com",
+        access_key="minioadmin",
+        secret_key="minioadmin",
+        bucket="visual-learning-media",
+        secure=False,
+        public_secure=True,
+        region="us-east-1",
+    )
+
+    url = await storage.get_download_url(object_key="images/example.png")
+
+    assert url.startswith("https://media.example.com/visual-learning-media/images/example.png?")
