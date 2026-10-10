@@ -4,5 +4,6 @@ export * from './health/health';
 export * from './leaderboards/leaderboards';
 export * from './learning/learning';
 export * from './media/media';
+export * from './photo-lab/photo-lab';
 export * from './teacher/teacher';
 export * from './users/users';

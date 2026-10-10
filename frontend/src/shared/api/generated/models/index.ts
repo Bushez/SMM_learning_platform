@@ -38,6 +38,8 @@ export * from './moduleResponse';
 export * from './moveRequest';
 export * from './moveTaskRequest';
 export * from './optionFeedbackResponse';
+export * from './photoAdjustmentsResponse';
+export * from './photoPresetResponse';
 export * from './readinessChecks';
 export * from './readinessResponse';
 export * from './readinessResponseStatus';

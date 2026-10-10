@@ -58,6 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link className="nav-link" href="/courses">{messages.navigation.courses}</Link>
             <Link className="nav-link" href="/learn">{messages.navigation.learning}</Link>
             <Link className="nav-link" href="/leaderboard">{messages.navigation.leaderboard}</Link>
+            <Link className="nav-link" href="/photo-lab">Фотолаборатория</Link>
             {user?.role === "TEACHER" && <Link className="nav-link" href="/teacher">{messages.navigation.teacher}</Link>}
           </nav>
           <AccountActions />

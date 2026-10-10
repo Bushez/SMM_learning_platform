@@ -1127,6 +1127,31 @@
         }
       }
     },
+    "/api/v1/photo-lab/presets": {
+      "get": {
+        "tags": [
+          "Photo Lab"
+        ],
+        "summary": "List curated master presets",
+        "operationId": "listPhotoLabPresets",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PhotoPresetResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Listphotolabpresets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/learning/courses/{course_id}/enroll": {
       "post": {
         "tags": [
@@ -2785,6 +2810,96 @@
           "media_id"
         ],
         "title": "OptionFeedbackResponse"
+      },
+      "PhotoAdjustmentsResponse": {
+        "properties": {
+          "exposure": {
+            "type": "number",
+            "title": "Exposure"
+          },
+          "temperature": {
+            "type": "integer",
+            "title": "Temperature"
+          },
+          "tint": {
+            "type": "integer",
+            "title": "Tint"
+          },
+          "contrast": {
+            "type": "integer",
+            "title": "Contrast"
+          },
+          "highlights": {
+            "type": "integer",
+            "title": "Highlights"
+          },
+          "shadows": {
+            "type": "integer",
+            "title": "Shadows"
+          },
+          "saturation": {
+            "type": "integer",
+            "title": "Saturation"
+          },
+          "aperture": {
+            "type": "number",
+            "title": "Aperture"
+          },
+          "shutter_speed": {
+            "type": "number",
+            "title": "Shutter Speed"
+          },
+          "iso": {
+            "type": "integer",
+            "title": "Iso"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exposure",
+          "temperature",
+          "tint",
+          "contrast",
+          "highlights",
+          "shadows",
+          "saturation",
+          "aperture",
+          "shutter_speed",
+          "iso"
+        ],
+        "title": "PhotoAdjustmentsResponse"
+      },
+      "PhotoPresetResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "adjustments": {
+            "$ref": "#/components/schemas/PhotoAdjustmentsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "author_name",
+          "description",
+          "adjustments"
+        ],
+        "title": "PhotoPresetResponse"
       },
       "ReadinessChecks": {
         "properties": {
