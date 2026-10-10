@@ -4,43 +4,47 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import messages from "../../../messages/ru.json";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ApiError, apiFetch } from "@/shared/api/http-client";
 import { siteConfig } from "@/shared/config/site";
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
-
-const registerSchema = loginSchema.extend({
-  password: z.string().min(10),
-  displayName: z.string().trim().min(2).max(80),
-});
-
-type LoginValues = z.infer<typeof loginSchema>;
-type RegisterValues = z.infer<typeof registerSchema>;
+import {
+  fieldFromValidationPath,
+  getApiAuthError,
+  loginSchema,
+  messageForAuthField,
+  registerSchema,
+  type AuthField,
+  type RegisterValues,
+} from "@/features/auth/auth-validation";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const isLogin = mode === "login";
-  const form = useForm<LoginValues | RegisterValues>({
-    defaultValues: { email: "", password: "", ...(isLogin ? {} : { displayName: "" }) },
+  const form = useForm<RegisterValues>({
+    defaultValues: { email: "", password: "", displayName: "" },
   });
 
-  async function submit(values: LoginValues | RegisterValues) {
+  async function submit(values: RegisterValues) {
     setError(null);
+    form.clearErrors();
+    const validation = (isLogin ? loginSchema : registerSchema).safeParse(values);
+    if (!validation.success) {
+      for (const issue of validation.error.issues) {
+        const field = fieldFromValidationPath(issue.path);
+        if (field) form.setError(field as never, { message: messageForAuthField(field) });
+      }
+      return;
+    }
     try {
       if (isLogin) {
-        await login(values.email, values.password);
+        await login(validation.data.email, validation.data.password);
       } else {
-        const registration = registerSchema.parse(values);
+        const registration = validation.data as RegisterValues;
         await apiFetch("/api/v1/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -56,12 +60,21 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       }
       router.replace("/");
     } catch (submissionError) {
-      setError(
-        submissionError instanceof ApiError
-          ? submissionError.message
-          : "Проверьте введённые данные и попробуйте ещё раз.",
-      );
+      if (submissionError instanceof ApiError) {
+        const apiError = getApiAuthError(submissionError);
+        if (apiError.field) {
+          form.setError(apiError.field as never, { message: apiError.message });
+        } else {
+          setError(apiError.message);
+        }
+      } else {
+        setError(messages.auth.genericError);
+      }
     }
+  }
+
+  function fieldError(field: AuthField): string | undefined {
+    return form.formState.errors[field]?.message as string | undefined;
   }
 
   const title = isLogin ? messages.auth.loginTitle : messages.auth.registerTitle;
@@ -77,16 +90,22 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           {!isLogin && (
             <label className="grid gap-2 text-sm font-bold">
               {messages.auth.displayName}
-              <input className="field-control" {...form.register("displayName" as never)} />
+              <input aria-describedby="display-name-hint" aria-invalid={Boolean(fieldError("displayName"))} className="field-control" maxLength={80} minLength={2} required {...form.register("displayName" as never, { onChange: () => form.clearErrors("displayName" as never) })} />
+              <span className="text-xs font-medium text-muted-foreground" id="display-name-hint">{messages.auth.displayNameHint}</span>
+              {fieldError("displayName") && <span className="text-xs font-bold text-danger" role="alert">{fieldError("displayName")}</span>}
             </label>
           )}
           <label className="grid gap-2 text-sm font-bold">
             {messages.auth.email}
-            <input autoComplete="email" className="field-control" type="email" {...form.register("email")} />
+            <input aria-describedby="email-hint" aria-invalid={Boolean(fieldError("email"))} autoComplete="email" className="field-control" maxLength={320} required type="email" {...form.register("email", { onChange: () => form.clearErrors("email") })} />
+            <span className="text-xs font-medium text-muted-foreground" id="email-hint">{messages.auth.emailHint}</span>
+            {fieldError("email") && <span className="text-xs font-bold text-danger" role="alert">{fieldError("email")}</span>}
           </label>
           <label className="grid gap-2 text-sm font-bold">
             {messages.auth.password}
-            <input autoComplete={isLogin ? "current-password" : "new-password"} className="field-control" type="password" {...form.register("password")} />
+            <input aria-describedby={isLogin ? undefined : "password-hint"} aria-invalid={Boolean(fieldError("password"))} autoComplete={isLogin ? "current-password" : "new-password"} className="field-control" maxLength={128} minLength={isLogin ? 1 : 10} required type="password" {...form.register("password", { onChange: () => form.clearErrors("password") })} />
+            {!isLogin && <span className="text-xs font-medium text-muted-foreground" id="password-hint">{messages.auth.passwordHint}</span>}
+            {fieldError("password") && <span className="text-xs font-bold text-danger" role="alert">{fieldError("password")}</span>}
           </label>
           {error && <p className="rounded-xl border border-danger/50 bg-danger/10 p-3 text-sm font-semibold text-danger" role="alert">{error}</p>}
           <Button disabled={form.formState.isSubmitting} type="submit">

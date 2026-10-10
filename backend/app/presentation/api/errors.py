@@ -57,6 +57,7 @@ async def application_exception_handler(request: Request, exc: Exception) -> JSO
         content=_error_body(
             code=exc.code,
             message=str(exc),
+            details=exc.details,
             trace_id=request.state.trace_id,
         ),
     )

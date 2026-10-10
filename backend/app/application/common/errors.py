@@ -2,8 +2,9 @@ class ApplicationError(Exception):
     status_code = 400
     code = "application_error"
 
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str, *, details: object | None = None) -> None:
         super().__init__(message)
+        self.details = details
 
 
 class ConflictError(ApplicationError):

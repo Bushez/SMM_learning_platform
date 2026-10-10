@@ -213,7 +213,7 @@ class CourseService:
         if issues:
             from app.application.common.errors import ConflictError
 
-            raise ConflictError("Course cannot be published: " + "; ".join(issues))
+            raise ConflictError("Course cannot be published", details=issues)
         course = await self._courses.update_course(
             course_id, status=CourseStatus.PUBLISHED.value, published=True
         )

@@ -3,12 +3,26 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ImagePlus,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 
+import messages from "../../../messages/ru.json";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
-import type { CourseResponse, MediaAssetResponse, TeacherCourseOutlineResponse, TeacherTaskResponse } from "@/shared/api/generated/models";
+import { getTeacherError } from "@/features/teacher/teacher-errors";
+import type {
+  CourseResponse,
+  MediaAssetResponse,
+  TeacherCourseOutlineResponse,
+  TeacherTaskResponse,
+} from "@/shared/api/generated/models";
 import { apiFetch } from "@/shared/api/http-client";
 import { ProtectedImage } from "@/shared/ui/protected-image";
 import { ErrorState, LoadingState } from "@/shared/ui/query-state";
@@ -16,41 +30,750 @@ import { AppShell } from "@/widgets/navigation/app-shell";
 
 function TeacherGuard({ children }: { children: React.ReactNode }) {
   const { isRestoring, user } = useAuth();
-  if (isRestoring) return <AppShell><LoadingState /></AppShell>;
-  if (user?.role !== "TEACHER") return <AppShell><main className="mx-auto max-w-xl px-5 py-20 text-center"><h1 className="text-3xl font-black">Доступен только преподавателям</h1></main></AppShell>;
+  if (isRestoring)
+    return (
+      <AppShell>
+        <LoadingState />
+      </AppShell>
+    );
+  if (user?.role !== "TEACHER")
+    return (
+      <AppShell>
+        <main className="mx-auto max-w-xl px-5 py-20 text-center">
+          <h1 className="text-3xl font-black">
+            Доступен только преподавателям
+          </h1>
+        </main>
+      </AppShell>
+    );
   return <>{children}</>;
 }
 
-function IconButton({ label, onClick, children, disabled = false }: { label: string; onClick: () => void; children: React.ReactNode; disabled?: boolean }) {
-  return <button aria-label={label} className="grid size-9 place-items-center rounded-xl border border-border bg-background text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-40" disabled={disabled} onClick={onClick} type="button">{children}</button>;
+function IconButton({
+  label,
+  onClick,
+  children,
+  disabled = false,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      aria-label={label}
+      className="grid size-9 place-items-center rounded-xl border border-border bg-background text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-40"
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
+      {children}
+    </button>
+  );
 }
 
 function useTeacherUpload() {
-  return useMutation({ mutationFn: async (file: File) => { const body = new FormData(); body.append("file", file); return apiFetch<MediaAssetResponse>("/api/v1/media/images", { method: "POST", body }); } });
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const body = new FormData();
+      body.append("file", file);
+      return apiFetch<MediaAssetResponse>("/api/v1/media/images", {
+        method: "POST",
+        body,
+      });
+    },
+  });
 }
 
 export function TeacherDashboard() {
-  const courses = useQuery({ queryKey: ["teacher-courses"], queryFn: () => apiFetch<CourseResponse[]>("/api/v1/teacher/courses") });
-  return <TeacherGuard><AppShell><main className="mx-auto max-w-6xl px-5 py-10"><div className="flex items-end justify-between gap-4"><div><p className="eyebrow">Авторская студия</p><h1 className="mt-4 text-4xl font-black">Ваши курсы</h1></div><Button render={<Link href="/teacher/courses/new" />}>Создать курс</Button></div>{courses.isLoading ? <LoadingState /> : <div className="mt-8 grid gap-4 md:grid-cols-2">{courses.data?.map((course) => <article className="overflow-hidden rounded-3xl border border-border bg-surface" key={course.id}>{course.cover_media_id ? <ProtectedImage alt={`Обложка курса ${course.title}`} className="aspect-[16/7] w-full object-cover" mediaId={course.cover_media_id} /> : <div className="grid aspect-[16/7] place-items-center bg-surface-muted text-sm font-bold text-muted-foreground">Нет обложки</div>}<div className="p-6"><span className="eyebrow">{course.status}</span><h2 className="mt-4 text-xl font-black">{course.title}</h2><p className="mt-2 text-sm text-muted-foreground">{course.description}</p><Button className="mt-5" render={<Link href={`/teacher/courses/${course.id}/edit`} />} variant="secondary">Открыть редактор</Button></div></article>)}</div>}</main></AppShell></TeacherGuard>;
+  const courses = useQuery({
+    queryKey: ["teacher-courses"],
+    queryFn: () => apiFetch<CourseResponse[]>("/api/v1/teacher/courses"),
+  });
+  return (
+    <TeacherGuard>
+      <AppShell>
+        <main className="mx-auto max-w-6xl px-5 py-10">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Авторская студия</p>
+              <h1 className="mt-4 text-4xl font-black">Ваши курсы</h1>
+            </div>
+            <Button render={<Link href="/teacher/courses/new" />}>
+              Создать курс
+            </Button>
+          </div>
+          {courses.isLoading ? (
+            <LoadingState />
+          ) : (
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {courses.data?.map((course) => (
+                <article
+                  className="overflow-hidden rounded-3xl border border-border bg-surface"
+                  key={course.id}
+                >
+                  {course.cover_media_id ? (
+                    <ProtectedImage
+                      alt={`Обложка курса ${course.title}`}
+                      className="aspect-[16/7] w-full object-cover"
+                      mediaId={course.cover_media_id}
+                    />
+                  ) : (
+                    <div className="grid aspect-[16/7] place-items-center bg-surface-muted text-sm font-bold text-muted-foreground">
+                      Нет обложки
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <span className="eyebrow">{course.status}</span>
+                    <h2 className="mt-4 text-xl font-black">{course.title}</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {course.description}
+                    </p>
+                    <Button
+                      className="mt-5"
+                      render={
+                        <Link href={`/teacher/courses/${course.id}/edit`} />
+                      }
+                      variant="secondary"
+                    >
+                      Открыть редактор
+                    </Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </main>
+      </AppShell>
+    </TeacherGuard>
+  );
 }
 
 export function NewCourse() {
-  const router = useRouter(); const [title, setTitle] = useState(""); const [description, setDescription] = useState("");
-  const create = useMutation({ mutationFn: () => apiFetch<CourseResponse>("/api/v1/teacher/courses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, category: "Фотография", language_code: "ru" }) }), onSuccess: (course) => router.replace(`/teacher/courses/${course.id}/edit`) });
-  return <TeacherGuard><AppShell><main className="mx-auto max-w-2xl px-5 py-10"><Link className="text-sm font-bold text-secondary" href="/teacher">← К курсам</Link><h1 className="mt-5 text-3xl font-black">Новый курс</h1><form className="mt-7 grid gap-4 rounded-3xl border border-border bg-surface p-6" onSubmit={(event) => { event.preventDefault(); create.mutate(); }}><input className="field-control" onChange={(event) => setTitle(event.target.value)} placeholder="Название" required value={title} /><p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-muted-foreground">Адрес курса будет создан автоматически из названия.</p><textarea className="field-control min-h-32 py-3" onChange={(event) => setDescription(event.target.value)} placeholder="Описание" required value={description} /><Button disabled={create.isPending} type="submit">Создать черновик</Button></form></main></AppShell></TeacherGuard>;
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [fieldError, setFieldError] = useState<"title" | "description" | null>(
+    null,
+  );
+  const create = useMutation({
+    mutationFn: () =>
+      apiFetch<CourseResponse>("/api/v1/teacher/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          category: "Фотография",
+          language_code: "ru",
+        }),
+      }),
+    onSuccess: (course) => router.replace(`/teacher/courses/${course.id}/edit`),
+  });
+  const serverError = create.isError
+    ? getTeacherError(create.error, messages.teacher.courseCreateError).title
+    : null;
+  return (
+    <TeacherGuard>
+      <AppShell>
+        <main className="mx-auto max-w-2xl px-5 py-10">
+          <Link className="text-sm font-bold text-secondary" href="/teacher">
+            ← К курсам
+          </Link>
+          <h1 className="mt-5 text-3xl font-black">Новый курс</h1>
+          <form
+            className="mt-7 grid gap-4 rounded-3xl border border-border bg-surface p-6"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (title.trim().length < 2) {
+                setFieldError("title");
+                return;
+              }
+              if (!description.trim()) {
+                setFieldError("description");
+                return;
+              }
+              setFieldError(null);
+              create.mutate();
+            }}
+          >
+            <label className="grid gap-2 text-sm font-bold">
+              Название
+              <input
+                aria-describedby="course-title-hint"
+                aria-invalid={fieldError === "title"}
+                className="field-control"
+                maxLength={160}
+                minLength={2}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  if (fieldError === "title") setFieldError(null);
+                }}
+                required
+                value={title}
+              />
+              <span
+                className="text-xs font-medium text-muted-foreground"
+                id="course-title-hint"
+              >
+                {messages.teacher.courseTitleHint}
+              </span>
+              {fieldError === "title" && (
+                <span className="text-xs text-danger">
+                  {messages.teacher.courseTitleError}
+                </span>
+              )}
+            </label>
+            <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-muted-foreground">
+              Адрес курса будет создан автоматически из названия.
+            </p>
+            <label className="grid gap-2 text-sm font-bold">
+              Описание
+              <textarea
+                aria-describedby="course-description-hint"
+                aria-invalid={fieldError === "description"}
+                className="field-control min-h-32 py-3"
+                maxLength={10_000}
+                onChange={(event) => {
+                  setDescription(event.target.value);
+                  if (fieldError === "description") setFieldError(null);
+                }}
+                required
+                value={description}
+              />
+              <span
+                className="text-xs font-medium text-muted-foreground"
+                id="course-description-hint"
+              >
+                {messages.teacher.courseDescriptionHint}
+              </span>
+              {fieldError === "description" && (
+                <span className="text-xs text-danger">
+                  {messages.teacher.courseDescriptionError}
+                </span>
+              )}
+            </label>
+            {serverError && (
+              <p
+                className="rounded-xl border border-danger/50 bg-danger/10 p-3 text-sm font-semibold text-danger"
+                role="alert"
+              >
+                {serverError}
+              </p>
+            )}
+            <Button disabled={create.isPending} type="submit">
+              Создать черновик
+            </Button>
+          </form>
+        </main>
+      </AppShell>
+    </TeacherGuard>
+  );
 }
 
 export function CourseBuilder() {
-  const { courseId } = useParams<{ courseId: string }>(); const client = useQueryClient(); const upload = useTeacherUpload();
-  const [moduleTitle, setModuleTitle] = useState(""); const [lessonTitle, setLessonTitle] = useState(""); const [addingLessonTo, setAddingLessonToState] = useState<string | null>("done"); const setAddingLessonTo = (value: string | null) => setAddingLessonToState((current) => value === null ? (current === null ? "done" : null) : value); const [editing, setEditing] = useState<{ id: string; kind: "module" | "lesson"; title: string } | null>(null);
-  const outline = useQuery({ queryKey: ["teacher-outline", courseId], queryFn: () => apiFetch<TeacherCourseOutlineResponse>(`/api/v1/teacher/courses/${courseId}/outline`) });
-  const tasks = useQuery({ queryKey: ["teacher-tasks", courseId], queryFn: () => apiFetch<TeacherTaskResponse[]>(`/api/v1/teacher/courses/${courseId}/tasks`) });
-  const refresh = () => { void client.invalidateQueries({ queryKey: ["teacher-outline", courseId] }); void client.invalidateQueries({ queryKey: ["teacher-tasks", courseId] }); };
-  const call = useMutation({ mutationFn: ({ path, method, body }: { path: string; method: string; body?: object }) => apiFetch(path, { method, headers: body ? { "Content-Type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined }), onSuccess: refresh });
-  if (outline.isLoading || tasks.isLoading) return <TeacherGuard><AppShell><LoadingState /></AppShell></TeacherGuard>;
-  if (!outline.data || outline.isError) return <TeacherGuard><AppShell><ErrorState retry={() => void outline.refetch()} /></AppShell></TeacherGuard>;
-  const { course, modules, lessons } = outline.data; const locked = course.status === "ARCHIVED";
-  const saveTitle = () => { if (!editing || !editing.title.trim()) return; call.mutate({ path: `/api/v1/teacher/courses/${editing.kind === "module" ? "modules" : "lessons"}/${editing.id}`, method: "PATCH", body: { title: editing.title, description: null } }, { onSuccess: () => { setEditing(null); refresh(); } }); };
-  const changeCover = (file: File) => upload.mutate(file, { onSuccess: (media) => call.mutate({ path: `/api/v1/teacher/courses/${courseId}`, method: "PATCH", body: { cover_media_id: media.id } }, { onSuccess: refresh }) });
-  return <TeacherGuard><AppShell><main className="mx-auto max-w-6xl px-5 py-8 lg:py-12"><header className="flex flex-wrap items-start justify-between gap-4"><div><Link className="text-sm font-bold text-secondary" href="/teacher">← Все курсы</Link><div className="mt-4 flex items-center gap-3"><span className="eyebrow">{course.status}</span><span className="text-sm text-muted-foreground">{modules.length} модулей · {lessons.length} уроков</span></div><h1 className="mt-3 text-4xl font-black">{course.title}</h1></div><div className="flex gap-2"><Button disabled={locked || course.status === "PUBLISHED"} onClick={() => call.mutate({ path: `/api/v1/teacher/courses/${courseId}/publish`, method: "POST" })}>Опубликовать</Button><Button disabled={locked} onClick={() => call.mutate({ path: `/api/v1/teacher/courses/${courseId}/archive`, method: "POST" })} variant="secondary">Архивировать</Button></div></header>{call.isError && <p className="mt-4 rounded-xl bg-danger/10 p-3 text-sm text-danger">Операция недоступна: контент с прогрессом ученика нельзя изменять или удалять.</p>}<section className="group relative mt-8 overflow-hidden rounded-[2rem] border border-border bg-surface"><div className="relative aspect-[3/1] min-h-48 bg-surface-muted">{course.cover_media_id ? <ProtectedImage alt="Обложка курса" className="h-full w-full object-cover" mediaId={course.cover_media_id} /> : <div className="grid h-full place-items-center text-sm font-bold text-muted-foreground">Добавьте обложку курса</div>}<label className="absolute inset-0 grid cursor-pointer place-items-center bg-background/60 opacity-0 transition group-hover:opacity-100"><span className="flex items-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-primary-foreground"><ImagePlus className="size-4" />{course.cover_media_id ? "Заменить обложку" : "Добавить обложку"}</span><input accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending || locked} onChange={(event) => { const file = event.target.files?.[0]; if (file) changeCover(file); }} type="file" /></label></div></section><section className="mt-8 rounded-[2rem] border border-border bg-surface p-5 sm:p-7"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="eyebrow">Сценарий обучения</p><h2 className="mt-3 text-2xl font-black">Структура курса</h2></div><button className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-4 font-bold hover:border-primary" disabled={locked} onClick={() => setAddingLessonTo(null)} type="button"><Plus className="size-4" />Модуль</button></div>{addingLessonTo === null && <form className="mt-5 flex gap-2" onSubmit={(event) => { event.preventDefault(); call.mutate({ path: `/api/v1/teacher/courses/${courseId}/modules`, method: "POST", body: { title: moduleTitle, position: modules.length + 1 } }, { onSuccess: () => { setModuleTitle(""); setAddingLessonTo("done"); refresh(); } }); }}><input className="field-control" onChange={(event) => setModuleTitle(event.target.value)} placeholder="Название нового модуля" required value={moduleTitle} /><Button disabled={locked || call.isPending} type="submit">Добавить</Button></form>}<div className="mt-6 space-y-4">{modules.map((module) => { const childLessons = lessons.filter((lesson) => lesson.module_id === module.id); return <article className="rounded-2xl border border-border bg-background p-4 sm:p-5" key={module.id}><div className="flex items-center justify-between gap-3"><div className="min-w-0">{editing?.id === module.id ? <form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); saveTitle(); }}><input autoFocus className="field-control" onChange={(event) => setEditing({ ...editing, title: event.target.value })} value={editing.title} /><Button type="submit">Сохранить</Button></form> : <><p className="text-xs font-bold text-secondary">МОДУЛЬ {module.position}</p><h3 className="truncate text-lg font-black">{module.title}</h3></>}</div><div className="flex shrink-0 gap-1"><IconButton label="Поднять модуль" disabled={locked || module.position === 1} onClick={() => call.mutate({ path: `/api/v1/teacher/courses/modules/${module.id}/move`, method: "POST", body: { position: module.position - 1 } })}><ChevronUp className="size-4" /></IconButton><IconButton label="Опустить модуль" disabled={locked || module.position === modules.length} onClick={() => call.mutate({ path: `/api/v1/teacher/courses/modules/${module.id}/move`, method: "POST", body: { position: module.position + 1 } })}><ChevronDown className="size-4" /></IconButton><IconButton label="Переименовать модуль" disabled={locked} onClick={() => setEditing({ id: module.id, kind: "module", title: module.title })}><Pencil className="size-4" /></IconButton><IconButton label="Удалить модуль" disabled={locked} onClick={() => { if (window.confirm(`Удалить модуль «${module.title}»?`)) call.mutate({ path: `/api/v1/teacher/courses/modules/${module.id}`, method: "DELETE" }); }}><Trash2 className="size-4" /></IconButton></div></div><div className="mt-4 space-y-2 border-l-2 border-border pl-4">{childLessons.map((lesson) => <div className="group/lesson flex items-center justify-between gap-3 rounded-xl bg-surface-muted p-3" key={lesson.id}>{editing?.id === lesson.id ? <form className="flex w-full gap-2" onSubmit={(event) => { event.preventDefault(); saveTitle(); }}><input autoFocus className="field-control" onChange={(event) => setEditing({ ...editing, title: event.target.value })} value={editing.title} /><Button type="submit">Сохранить</Button></form> : <Link className="min-w-0 flex-1" href={`/teacher/courses/${courseId}/lessons/${lesson.id}`}><p className="truncate font-bold">{lesson.position}. {lesson.title}</p><p className="text-xs text-muted-foreground">{tasks.data?.filter((task) => task.lesson_id === lesson.id).length ?? 0} заданий · Открыть редактор</p></Link>}<div className="flex gap-1"><IconButton label="Переименовать урок" disabled={locked} onClick={() => setEditing({ id: lesson.id, kind: "lesson", title: lesson.title })}><Pencil className="size-4" /></IconButton><IconButton label="Удалить урок" disabled={locked} onClick={() => { if (window.confirm(`Удалить урок «${lesson.title}»?`)) call.mutate({ path: `/api/v1/teacher/courses/lessons/${lesson.id}`, method: "DELETE" }); }}><Trash2 className="size-4" /></IconButton></div></div>)}{addingLessonTo === module.id ? <form className="flex gap-2 py-2" onSubmit={(event) => { event.preventDefault(); call.mutate({ path: `/api/v1/teacher/courses/modules/${module.id}/lessons`, method: "POST", body: { title: lessonTitle, position: childLessons.length + 1 } }, { onSuccess: () => { setLessonTitle(""); setAddingLessonTo("done"); refresh(); } }); }}><input autoFocus className="field-control" onChange={(event) => setLessonTitle(event.target.value)} placeholder="Название урока" required value={lessonTitle} /><Button type="submit">Добавить</Button></form> : <button className="flex items-center gap-2 py-2 text-sm font-bold text-secondary hover:underline" disabled={locked} onClick={() => setAddingLessonTo(module.id)} type="button"><Plus className="size-4" />Добавить урок</button>}</div></article>; })}</div></section></main></AppShell></TeacherGuard>;
+  const { courseId } = useParams<{ courseId: string }>();
+  const client = useQueryClient();
+  const upload = useTeacherUpload();
+  const [moduleTitle, setModuleTitle] = useState("");
+  const [lessonTitle, setLessonTitle] = useState("");
+  const [addingLessonTo, setAddingLessonToState] = useState<string | null>(
+    "done",
+  );
+  const setAddingLessonTo = (value: string | null) =>
+    setAddingLessonToState((current) =>
+      value === null ? (current === null ? "done" : null) : value,
+    );
+  const [editing, setEditing] = useState<{
+    id: string;
+    kind: "module" | "lesson";
+    title: string;
+  } | null>(null);
+  const outline = useQuery({
+    queryKey: ["teacher-outline", courseId],
+    queryFn: () =>
+      apiFetch<TeacherCourseOutlineResponse>(
+        `/api/v1/teacher/courses/${courseId}/outline`,
+      ),
+  });
+  const tasks = useQuery({
+    queryKey: ["teacher-tasks", courseId],
+    queryFn: () =>
+      apiFetch<TeacherTaskResponse[]>(
+        `/api/v1/teacher/courses/${courseId}/tasks`,
+      ),
+  });
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: ["teacher-outline", courseId] });
+    void client.invalidateQueries({ queryKey: ["teacher-tasks", courseId] });
+  };
+  const call = useMutation({
+    mutationFn: ({
+      path,
+      method,
+      body,
+    }: {
+      path: string;
+      method: string;
+      body?: object;
+    }) =>
+      apiFetch(path, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      }),
+    onSuccess: refresh,
+  });
+  if (outline.isLoading || tasks.isLoading)
+    return (
+      <TeacherGuard>
+        <AppShell>
+          <LoadingState />
+        </AppShell>
+      </TeacherGuard>
+    );
+  if (!outline.data || outline.isError)
+    return (
+      <TeacherGuard>
+        <AppShell>
+          <ErrorState retry={() => void outline.refetch()} />
+        </AppShell>
+      </TeacherGuard>
+    );
+  const { course, modules, lessons } = outline.data;
+  const locked = course.status === "ARCHIVED";
+  const commandError = call.isError
+    ? getTeacherError(call.error, messages.teacher.genericActionError)
+    : null;
+  const uploadError = upload.isError
+    ? getTeacherError(upload.error, messages.teacher.imageUploadError)
+    : null;
+  const saveTitle = () => {
+    if (!editing || !editing.title.trim()) return;
+    call.mutate(
+      {
+        path: `/api/v1/teacher/courses/${editing.kind === "module" ? "modules" : "lessons"}/${editing.id}`,
+        method: "PATCH",
+        body: { title: editing.title, description: null },
+      },
+      {
+        onSuccess: () => {
+          setEditing(null);
+          refresh();
+        },
+      },
+    );
+  };
+  const changeCover = (file: File) =>
+    upload.mutate(file, {
+      onSuccess: (media) =>
+        call.mutate(
+          {
+            path: `/api/v1/teacher/courses/${courseId}`,
+            method: "PATCH",
+            body: { cover_media_id: media.id },
+          },
+          { onSuccess: refresh },
+        ),
+    });
+  return (
+    <TeacherGuard>
+      <AppShell>
+        <main className="mx-auto max-w-6xl px-5 py-8 lg:py-12">
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <Link
+                className="text-sm font-bold text-secondary"
+                href="/teacher"
+              >
+                ← Все курсы
+              </Link>
+              <div className="mt-4 flex items-center gap-3">
+                <span className="eyebrow">{course.status}</span>
+                <span className="text-sm text-muted-foreground">
+                  {modules.length} модулей · {lessons.length} уроков
+                </span>
+              </div>
+              <h1 className="mt-3 text-4xl font-black">{course.title}</h1>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                disabled={locked || course.status === "PUBLISHED"}
+                onClick={() =>
+                  call.mutate({
+                    path: `/api/v1/teacher/courses/${courseId}/publish`,
+                    method: "POST",
+                  })
+                }
+              >
+                Опубликовать
+              </Button>
+              <Button
+                disabled={locked}
+                onClick={() =>
+                  call.mutate({
+                    path: `/api/v1/teacher/courses/${courseId}/archive`,
+                    method: "POST",
+                  })
+                }
+                variant="secondary"
+              >
+                Архивировать
+              </Button>
+            </div>
+          </header>
+          {commandError && (
+            <section
+              className="mt-4 rounded-xl border border-danger/40 bg-danger/10 p-4 text-sm text-danger"
+              role="alert"
+            >
+              <p className="font-bold">{commandError.title}</p>
+              {commandError.details.length > 0 && (
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {commandError.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+          <section className="group relative mt-8 overflow-hidden rounded-[2rem] border border-border bg-surface">
+            <div className="relative aspect-[3/1] min-h-48 bg-surface-muted">
+              {course.cover_media_id ? (
+                <ProtectedImage
+                  alt="Обложка курса"
+                  className="h-full w-full object-cover"
+                  mediaId={course.cover_media_id}
+                />
+              ) : (
+                <div className="grid h-full place-items-center text-sm font-bold text-muted-foreground">
+                  Добавьте обложку курса
+                </div>
+              )}
+              <label className="absolute inset-0 grid cursor-pointer place-items-center bg-background/60 opacity-0 transition group-hover:opacity-100">
+                <span className="flex items-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-primary-foreground">
+                  <ImagePlus className="size-4" />
+                  {course.cover_media_id
+                    ? "Заменить обложку"
+                    : "Добавить обложку"}
+                </span>
+                <input
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  disabled={upload.isPending || locked}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) changeCover(file);
+                  }}
+                  type="file"
+                />
+              </label>
+            </div>
+            {uploadError && (
+              <p className="p-4 text-sm font-semibold text-danger" role="alert">
+                {uploadError.title}
+              </p>
+            )}
+          </section>
+          <section className="mt-8 rounded-[2rem] border border-border bg-surface p-5 sm:p-7">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="eyebrow">Сценарий обучения</p>
+                <h2 className="mt-3 text-2xl font-black">Структура курса</h2>
+              </div>
+              <button
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-4 font-bold hover:border-primary"
+                disabled={locked}
+                onClick={() => setAddingLessonTo(null)}
+                type="button"
+              >
+                <Plus className="size-4" />
+                Модуль
+              </button>
+            </div>
+            {addingLessonTo === null && (
+              <form
+                className="mt-5 flex gap-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  call.mutate(
+                    {
+                      path: `/api/v1/teacher/courses/${courseId}/modules`,
+                      method: "POST",
+                      body: {
+                        title: moduleTitle,
+                        position: modules.length + 1,
+                      },
+                    },
+                    {
+                      onSuccess: () => {
+                        setModuleTitle("");
+                        setAddingLessonTo("done");
+                        refresh();
+                      },
+                    },
+                  );
+                }}
+              >
+                <input
+                  className="field-control"
+                  maxLength={160}
+                  minLength={2}
+                  onChange={(event) => setModuleTitle(event.target.value)}
+                  placeholder="Название нового модуля"
+                  required
+                  value={moduleTitle}
+                />
+                <Button disabled={locked || call.isPending} type="submit">
+                  Добавить
+                </Button>
+              </form>
+            )}
+            <div className="mt-6 space-y-4">
+              {modules.map((module) => {
+                const childLessons = lessons.filter(
+                  (lesson) => lesson.module_id === module.id,
+                );
+                return (
+                  <article
+                    className="rounded-2xl border border-border bg-background p-4 sm:p-5"
+                    key={module.id}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        {editing?.id === module.id ? (
+                          <form
+                            className="flex gap-2"
+                            onSubmit={(event) => {
+                              event.preventDefault();
+                              saveTitle();
+                            }}
+                          >
+                            <input
+                              autoFocus
+                              className="field-control"
+                              maxLength={160}
+                              minLength={2}
+                              onChange={(event) =>
+                                setEditing({
+                                  ...editing,
+                                  title: event.target.value,
+                                })
+                              }
+                              value={editing.title}
+                            />
+                            <Button type="submit">Сохранить</Button>
+                          </form>
+                        ) : (
+                          <>
+                            <p className="text-xs font-bold text-secondary">
+                              МОДУЛЬ {module.position}
+                            </p>
+                            <h3 className="truncate text-lg font-black">
+                              {module.title}
+                            </h3>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex shrink-0 gap-1">
+                        <IconButton
+                          label="Поднять модуль"
+                          disabled={locked || module.position === 1}
+                          onClick={() =>
+                            call.mutate({
+                              path: `/api/v1/teacher/courses/modules/${module.id}/move`,
+                              method: "POST",
+                              body: { position: module.position - 1 },
+                            })
+                          }
+                        >
+                          <ChevronUp className="size-4" />
+                        </IconButton>
+                        <IconButton
+                          label="Опустить модуль"
+                          disabled={
+                            locked || module.position === modules.length
+                          }
+                          onClick={() =>
+                            call.mutate({
+                              path: `/api/v1/teacher/courses/modules/${module.id}/move`,
+                              method: "POST",
+                              body: { position: module.position + 1 },
+                            })
+                          }
+                        >
+                          <ChevronDown className="size-4" />
+                        </IconButton>
+                        <IconButton
+                          label="Переименовать модуль"
+                          disabled={locked}
+                          onClick={() =>
+                            setEditing({
+                              id: module.id,
+                              kind: "module",
+                              title: module.title,
+                            })
+                          }
+                        >
+                          <Pencil className="size-4" />
+                        </IconButton>
+                        <IconButton
+                          label="Удалить модуль"
+                          disabled={locked}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                `Удалить модуль «${module.title}»?`,
+                              )
+                            )
+                              call.mutate({
+                                path: `/api/v1/teacher/courses/modules/${module.id}`,
+                                method: "DELETE",
+                              });
+                          }}
+                        >
+                          <Trash2 className="size-4" />
+                        </IconButton>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-2 border-l-2 border-border pl-4">
+                      {childLessons.map((lesson) => (
+                        <div
+                          className="group/lesson flex items-center justify-between gap-3 rounded-xl bg-surface-muted p-3"
+                          key={lesson.id}
+                        >
+                          {editing?.id === lesson.id ? (
+                            <form
+                              className="flex w-full gap-2"
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                saveTitle();
+                              }}
+                            >
+                              <input
+                                autoFocus
+                                className="field-control"
+                                maxLength={160}
+                                minLength={2}
+                                onChange={(event) =>
+                                  setEditing({
+                                    ...editing,
+                                    title: event.target.value,
+                                  })
+                                }
+                                value={editing.title}
+                              />
+                              <Button type="submit">Сохранить</Button>
+                            </form>
+                          ) : (
+                            <Link
+                              className="min-w-0 flex-1"
+                              href={`/teacher/courses/${courseId}/lessons/${lesson.id}`}
+                            >
+                              <p className="truncate font-bold">
+                                {lesson.position}. {lesson.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {tasks.data?.filter(
+                                  (task) => task.lesson_id === lesson.id,
+                                ).length ?? 0}{" "}
+                                заданий · Открыть редактор
+                              </p>
+                            </Link>
+                          )}
+                          <div className="flex gap-1">
+                            <IconButton
+                              label="Переименовать урок"
+                              disabled={locked}
+                              onClick={() =>
+                                setEditing({
+                                  id: lesson.id,
+                                  kind: "lesson",
+                                  title: lesson.title,
+                                })
+                              }
+                            >
+                              <Pencil className="size-4" />
+                            </IconButton>
+                            <IconButton
+                              label="Удалить урок"
+                              disabled={locked}
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `Удалить урок «${lesson.title}»?`,
+                                  )
+                                )
+                                  call.mutate({
+                                    path: `/api/v1/teacher/courses/lessons/${lesson.id}`,
+                                    method: "DELETE",
+                                  });
+                              }}
+                            >
+                              <Trash2 className="size-4" />
+                            </IconButton>
+                          </div>
+                        </div>
+                      ))}
+                      {addingLessonTo === module.id ? (
+                        <form
+                          className="flex gap-2 py-2"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            call.mutate(
+                              {
+                                path: `/api/v1/teacher/courses/modules/${module.id}/lessons`,
+                                method: "POST",
+                                body: {
+                                  title: lessonTitle,
+                                  position: childLessons.length + 1,
+                                },
+                              },
+                              {
+                                onSuccess: () => {
+                                  setLessonTitle("");
+                                  setAddingLessonTo("done");
+                                  refresh();
+                                },
+                              },
+                            );
+                          }}
+                        >
+                          <input
+                            autoFocus
+                            className="field-control"
+                            maxLength={160}
+                            minLength={2}
+                            onChange={(event) =>
+                              setLessonTitle(event.target.value)
+                            }
+                            placeholder="Название урока"
+                            required
+                            value={lessonTitle}
+                          />
+                          <Button type="submit">Добавить</Button>
+                        </form>
+                      ) : (
+                        <button
+                          className="flex items-center gap-2 py-2 text-sm font-bold text-secondary hover:underline"
+                          disabled={locked}
+                          onClick={() => setAddingLessonTo(module.id)}
+                          type="button"
+                        >
+                          <Plus className="size-4" />
+                          Добавить урок
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        </main>
+      </AppShell>
+    </TeacherGuard>
+  );
 }

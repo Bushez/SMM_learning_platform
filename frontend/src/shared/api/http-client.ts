@@ -5,6 +5,7 @@ export class ApiError extends Error {
     public readonly status: number,
     public readonly code: string,
     message: string,
+    public readonly details?: unknown,
   ) {
     super(message);
   }
@@ -70,12 +71,13 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as {
-      error?: { code?: string; message?: string };
+      error?: { code?: string; message?: string; details?: unknown };
     } | null;
     throw new ApiError(
       response.status,
       body?.error?.code ?? "request_failed",
       body?.error?.message ?? `API request failed with status ${response.status}`,
+      body?.error?.details,
     );
   }
 

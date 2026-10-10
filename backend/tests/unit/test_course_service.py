@@ -85,8 +85,9 @@ async def test_only_owner_can_publish_course() -> None:
 async def test_publish_returns_validation_errors_before_status_change() -> None:
     courses = FakeCourses()
     courses.issues = ["Course needs at least one task"]
-    with pytest.raises(ConflictError, match="at least one task"):
+    with pytest.raises(ConflictError, match="Course cannot be published") as error:
         await make_service(courses).publish(
             author_id=courses.course.author_id, course_id=courses.course.id
         )
+    assert error.value.details == ["Course needs at least one task"]
     assert courses.course.status == CourseStatus.DRAFT
