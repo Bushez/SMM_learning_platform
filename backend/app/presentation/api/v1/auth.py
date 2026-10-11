@@ -159,11 +159,11 @@ async def refresh(
 )
 async def logout(
     request: Request,
-    response: Response,
     service: AuthService = Depends(get_auth_service),
 ) -> Response:
     settings: Settings = request.app.state.settings
     await service.logout(request.cookies.get(settings.refresh_cookie_name))
+    response = Response(status_code=status.HTTP_204_NO_CONTENT)
     _clear_refresh_cookie(response, request)
     return response
 

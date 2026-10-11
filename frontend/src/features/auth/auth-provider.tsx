@@ -52,9 +52,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await apiFetch<void>("/api/v1/auth/logout", { method: "POST" });
-    setAccessToken(null);
-    setUser(null);
+    try {
+      await apiFetch<void>("/api/v1/auth/logout", { method: "POST" });
+    } catch {
+      // Clearing the local session is still the correct outcome if revocation is unavailable.
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
   }, []);
 
   const value = useMemo(
